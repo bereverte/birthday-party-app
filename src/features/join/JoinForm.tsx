@@ -1,0 +1,107 @@
+import { useState, type FormEvent } from 'react'
+import { Button } from '../../components/ui/Button'
+import { Card } from '../../components/ui/Card'
+import { EmojiAvatar } from '../../components/ui/EmojiAvatar'
+import { Screen } from '../../components/ui/Screen'
+import { TextInput } from '../../components/ui/TextInput'
+import { friendlyError } from '../../lib/errors'
+import { supabase } from '../../lib/supabase'
+
+// A fixed set to tap instead of the emoji keyboard: faster on a phone and
+// no odd values. 👑 is left out: it marks the host.
+const EMOJIS = [
+  '🎉', '🦄', '🐱', '🐶', '🦊', '🐼', '🐸', '🐙',
+  '🦖', '🌵', '🍕', '🍩', '🌈', '⭐', '🔥', '👽',
+  '🤖', '🎸', '🪩', '🧁', '🐝', '🦋', '🍉', '🐧',
+]
+
+type Props = {
+  userId: string
+  onJoined: () => void
+  title?: string
+}
+
+export function JoinForm({ userId, onJoined, title = 'Entra a la festa!' }: Props) {
+  const [name, setName] = useState('')
+  const [emoji, setEmoji] = useState(() => EMOJIS[Math.floor(Math.random() * EMOJIS.length)])
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const trimmed = name.trim()
+
+  async function handleSubmit(event: FormEvent) {
+    event.preventDefault()
+    if (!trimmed) return
+    setSaving(true)
+    setError(null)
+    const { error } = await supabase.rpc('join_party', { p_name: trimmed, p_emoji: emoji })
+    setSaving(false)
+    if (error) setError(friendlyError(error))
+    else onJoined()
+  }
+
+  return (
+    <Screen>
+      <header className="flex flex-col items-center gap-3 pt-4 text-center">
+        <span className="animate-wiggle text-5xl" aria-hidden>
+          🎂
+        </span>
+        <h1 className="text-4xl leading-none font-extrabold">{title}</h1>
+        <p className="text-ink-soft">Digues com et diuen i tria el teu emoji.</p>
+      </header>
+
+      <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+        <Card tilt="right" className="flex items-center gap-4">
+          <EmojiAvatar key={emoji} emoji={emoji} seed={userId} size="lg" />
+          <p className="min-w-0 font-display text-3xl font-extrabold break-words">
+            {trimmed || <span className="text-ink-soft/50">El teu nom</span>}
+          </p>
+        </Card>
+
+        <TextInput
+          label="Nom"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          maxLength={30}
+          autoComplete="nickname"
+          enterKeyHint="done"
+          placeholder="Com et diuen?"
+          required
+        />
+
+        <fieldset className="flex flex-col gap-2">
+          <legend className="mb-1.5 font-display text-lg font-bold">Emoji</legend>
+          <div className="grid grid-cols-6 gap-2">
+            {EMOJIS.map((option) => {
+              const selected = option === emoji
+              return (
+                <button
+                  key={option}
+                  type="button"
+                  onClick={() => setEmoji(option)}
+                  aria-pressed={selected}
+                  aria-label={option}
+                  className={`aspect-square rounded-2xl border-3 text-2xl transition-transform duration-100 active:scale-90 ${
+                    selected ? 'scale-110 -rotate-6 border-ink bg-sun shadow-sticker-sm' : 'border-transparent bg-paper/70'
+                  }`}
+                >
+                  {option}
+                </button>
+              )
+            })}
+          </div>
+        </fieldset>
+
+        {error && (
+          <p role="alert" className="rounded-2xl border-3 border-ink bg-tomato/20 px-4 py-3 font-bold">
+            {error}
+          </p>
+        )}
+
+        <Button type="submit" size="lg" loading={saving} disabled={!trimmed}>
+          Entra a la festa 🎉
+        </Button>
+      </form>
+    </Screen>
+  )
+}
