@@ -132,3 +132,46 @@ A log of significant technical decisions and the reasoning behind them.
 **What is covered:** late answers rejected, host can't answer the quiz, double answers rejected, `close_question` twice doesn't duplicate points, the score formula (5 s out of 20 s → 875), `award_challenge_points` with 3 players creates 3 rows and re-awarding overwrites, no self-voting (creator and partner), vote replacement, show score, and RLS (anon gets nothing, questions hidden until opened, answers hidden until revealed, no direct writes to the ledger, column grant on `party_state`).
 
 **Why:** The rules live in the database, so that's where they are tested, without a browser or a UI. `now()` is frozen inside a transaction, so tests set timestamps explicitly instead of waiting.
+
+## 019 — The refetch pattern in the frontend
+
+**Decision:** One reusable hook, `useRealtimeRefetch({ name, tables, fetcher })`, implements DECISIONS 001. It reads the data immediately, subscribes to Postgres Changes on the given tables, and reads again when:
+- an event arrives (the doorbell),
+- the channel reaches `SUBSCRIBED` (first connection **and** every reconnection),
+- the tab becomes visible again,
+- the browser fires `online`,
+- the host sends "resync".
+
+Reads are **coalesced**: only one runs at a time, and events that arrive during a read mark the data as dirty, so exactly one more read runs afterwards. 30 guests joining in a burst cause 2 reads, not 30, and an older response can never overwrite a newer one. Each hook instance gets a unique channel topic.
+
+**Why:** Phones lock their screens and switch networks, so events get lost. The client never relies on receiving every event: any of the triggers above fixes its state. Event payloads aren't used at all, which also means RLS-filtered or out-of-order events can't cause bugs. Unique topics are needed because `supabase.channel(topic)` returns an existing channel with the same topic and `removeChannel` is async: with React StrictMode remounting effects, a shared topic would hand back a channel that is being closed.
+
+## 020 — Presence for "who is online"
+
+**Decision:** "Who has joined" comes from the `players` table (Postgres Changes). "Who is online right now" comes from Realtime Presence on a shared `party` channel. Each device tracks `{ user_id }`; the online set is the unique user ids in the presence state, so several tabs of one person count once.
+
+**Why:** Being online is ephemeral state, not data. A `last_seen` column would need a heartbeat writing to the database every few seconds and a rule for when someone counts as gone, and a phone that dies would keep looking online. Presence is handled by the Realtime server: when a socket drops, the server removes that entry and notifies everyone. The user id is in the payload, not the presence key, so the channel doesn't depend on who is signed in and never needs recreating (the host goes from anonymous to signed in on the same page). Presence is tracked again on every `SUBSCRIBED`, because it is lost when the socket drops.
+
+## 021 — Anonymous session and reconnection
+
+**Decision:** The guest page reuses the stored session if there is one and only calls `signInAnonymously()` when there isn't. If it fails (rate limit, no coverage) the guest sees a friendly message and a retry button. The players list doubles as "who am I": if the current user isn't in it, the join form is shown.
+
+**Why:** supabase-js stores the access and refresh tokens in `localStorage` and refreshes them automatically. Reopening the tab gives the same `auth.uid()`, and since `players.id = auth.uid()` the guest lands straight in the lobby without spending another sign-in against the rate limit (DECISIONS 011). The session is only lost if the guest clears site data or switches browser; they then join as a new player and the host can remove the duplicate (DECISIONS 024). Because "who am I" is derived from the live players list, a removed guest automatically falls back to the join form.
+
+## 022 — Force resync over a public Broadcast channel
+
+**Decision:** The host's "force resync" button sends a Broadcast `resync` message on the shared `party` channel. Every `useRealtimeRefetch` listens for it and refetches. The host refetches her own data directly, because Broadcast isn't echoed to the sender by default.
+
+**Why:** It's a rescue button for a phone that looks stuck, and the message carries no data: it only triggers a normal database read through RLS. So the channel can be public: anyone sending `resync` would only make clients read what they're already allowed to read. A private channel with Realtime Authorization would add policies for no security gain.
+
+## 023 — Visual direction and self-hosted font
+
+**Decision:** A "paper party / stickers" look: cream background with a faint confetti tile, saturated colours, thick dark outlines and hard offset shadows; buttons sink into their shadow when pressed. Display font Bricolage Grotesque, self-hosted with `@fontsource-variable` (weight axis only, 41 kB). Design tokens live in Tailwind v4's `@theme` in `index.css`; base components in `src/components/ui/`. UI copy is in Catalan.
+
+**Why:** The brief asked for something festive that doesn't look like a template. The look is built from a few tokens (colours, `shadow-sticker`, `border-3`), so new screens get it for free. Self-hosting avoids depending on Google Fonts over mobile data; the full variable font with the width axis was 131 kB, so only the weight axis is loaded. Animations respect `prefers-reduced-motion`.
+
+## 024 — Players can only be removed if they have no activity
+
+**Decision:** The `players` delete policy is now `is_host() and not player_has_activity(id)`. `player_has_activity` is a `security definer` function that checks the ledger, quiz answers, votes, act memberships and acts created. In the UI, a refused delete returns 0 rows (not an error) and the host sees "already has activity".
+
+**Why:** Every foreign key to `players` is `on delete cascade`. Removing an active player would silently delete their points, answers and votes (changing act averages), and even the acts they created, along with the other members. Their teammates' points for that act would stay orphaned in the ledger, because `source_id` isn't a foreign key. The remove button is meant for duplicates, which have no activity. The rule lives in the database like the others. The helper is definer so it sees every row regardless of the caller's RLS.
