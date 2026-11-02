@@ -66,7 +66,7 @@ A log of significant technical decisions and the reasoning behind them.
 
 | Tool | Used for |
 |---|---|
-| Postgres Changes | `party_state` (everyone), `quiz_answers` (host's answer counter), show sign-ups, `points_ledger` (triggers leaderboard refetch) |
+| Postgres Changes | `party_state` (everyone), `players` (lobby: who has joined), `quiz_answers` (host's answer counter), show sign-ups, `points_ledger` (triggers leaderboard refetch) |
 | Broadcast | Host "force resync" command; optional live reactions |
 | Presence | Who is online (lobby, host panel) |
 

@@ -390,6 +390,9 @@ isOneToOne: false
 "open_question":
 { Args: { "p_question_id": string }; Returns: undefined
                            },
+"player_has_activity":
+{ Args: { "p_player_id": string }; Returns: boolean
+                           },
 "reveal_question":
 { Args: Record<PropertyKey, never>; Returns: undefined
                            },
