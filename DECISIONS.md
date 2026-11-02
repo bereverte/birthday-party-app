@@ -124,3 +124,11 @@ A log of significant technical decisions and the reasoning behind them.
 **Race between answering and closing:** `submit_answer` reads `party_state` with `FOR SHARE` and `close_question` with `FOR UPDATE`. Answers can run in parallel with each other, but closing waits for in-flight answers to commit, and an answer arriving after the close sees `closed`. So no answer can be stored after its points were computed. `cast_vote` / `close_voting` use the same pattern on `show_acts`.
 
 **Sign-up:** `sign_up_act(title, member_ids)` was added: it creates the act and its members atomically and always includes the caller as a member.
+
+## 018 — Database tests with pgTAP
+
+**Decision:** The key rules are tested in SQL with pgTAP (`supabase/tests/database/*.test.sql`, run with `npm run db:test`). Each file runs inside a transaction that is rolled back. To act as a user, a test switches to the `authenticated` role and sets `request.jwt.claims`, which is exactly what Supabase does on every API request, so `auth.uid()`, RLS and the RPCs behave as in production.
+
+**What is covered:** late answers rejected, host can't answer the quiz, double answers rejected, `close_question` twice doesn't duplicate points, the score formula (5 s out of 20 s → 875), `award_challenge_points` with 3 players creates 3 rows and re-awarding overwrites, no self-voting (creator and partner), vote replacement, show score, and RLS (anon gets nothing, questions hidden until opened, answers hidden until revealed, no direct writes to the ledger, column grant on `party_state`).
+
+**Why:** The rules live in the database, so that's where they are tested, without a browser or a UI. `now()` is frozen inside a transaction, so tests set timestamps explicitly instead of waiting.
