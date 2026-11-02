@@ -111,3 +111,16 @@ A log of significant technical decisions and the reasoning behind them.
 **Decision:** Guests can only read the current question (and its options) once its status is no longer `idle`. The correct answer (`quiz_keys`) is visible to guests only when the current question is `revealed`. The host sees everything.
 
 **Why:** Otherwise any guest could read all questions in advance from DevTools and get the speed bonus. Policies compare against `party_state.current_question_id`, so the visibility follows the game automatically.
+
+## 015 — How security definer functions are protected
+
+**Decision:** Functions that write points, answers or votes are `security definer`. Each one:
+1. Checks the caller itself (`auth.uid()`, `is_host()`), because definer functions bypass RLS.
+2. Sets `search_path = ''` and uses fully qualified names (`public.players`), so nobody can shadow a table or function with an object in another schema and get it run with owner privileges.
+3. Has `EXECUTE` revoked from `public` and `anon` (Postgres grants it to everyone by default) and granted to `authenticated`.
+
+`server_now()` and `join_party()` are plain `security invoker`: the first reads no data, and the second only does what the `players` RLS policies already allow. Rule: definer only when the caller must do something they couldn't do directly, in a controlled way.
+
+**Race between answering and closing:** `submit_answer` reads `party_state` with `FOR SHARE` and `close_question` with `FOR UPDATE`. Answers can run in parallel with each other, but closing waits for in-flight answers to commit, and an answer arriving after the close sees `closed`. So no answer can be stored after its points were computed. `cast_vote` / `close_voting` use the same pattern on `show_acts`.
+
+**Sign-up:** `sign_up_act(title, member_ids)` was added: it creates the act and its members atomically and always includes the caller as a member.
