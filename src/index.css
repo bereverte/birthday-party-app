@@ -1,1 +1,65 @@
 @import 'tailwindcss';
+@import '@fontsource-variable/bricolage-grotesque';
+
+/* "Paper party / stickers": cream paper, saturated confetti colours, thick
+   ink outlines and hard offset shadows, like cut-out stickers. */
+@theme {
+  --font-display: 'Bricolage Grotesque Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-sans: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+
+  --color-cream: #fff6e9;
+  --color-paper: #fffdf8;
+  --color-ink: #2b1240;
+  --color-ink-soft: #6b5a7a;
+  --color-pink: #ff4f9a;
+  --color-sun: #ffc93c;
+  --color-mint: #3ddc97;
+  --color-lilac: #a78bfa;
+  --color-sky: #4cc9f0;
+  --color-tomato: #ff6b4a;
+
+  --shadow-sticker: 4px 4px 0 0 var(--color-ink);
+  --shadow-sticker-sm: 2px 2px 0 0 var(--color-ink);
+  --shadow-sticker-lg: 6px 6px 0 0 var(--color-ink);
+
+  --animate-wiggle: wiggle 2.6s ease-in-out infinite;
+  --animate-pop: pop 280ms cubic-bezier(0.3, 1.6, 0.6, 1) both;
+  --animate-float: float 3s ease-in-out infinite;
+
+  @keyframes wiggle {
+    0%, 100% { transform: rotate(-4deg); }
+    50% { transform: rotate(4deg); }
+  }
+  @keyframes pop {
+    from { transform: scale(0.6); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+  }
+}
+
+@layer base {
+  html {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    @apply bg-cream font-sans text-ink antialiased;
+    /* Confetti tile: a few scattered shapes, kept faint so text stays readable. */
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'%3E%3Cg opacity='.35'%3E%3Crect x='18' y='22' width='14' height='6' rx='2' fill='%23ff4f9a' transform='rotate(-24 25 25)'/%3E%3Ccircle cx='118' cy='30' r='4' fill='%233ddc97'/%3E%3Crect x='96' y='104' width='14' height='6' rx='2' fill='%23ffc93c' transform='rotate(32 103 107)'/%3E%3Ccircle cx='40' cy='120' r='3.5' fill='%234cc9f0'/%3E%3Cpath d='M66 64q6-8 12 0t12 0' fill='none' stroke='%23a78bfa' stroke-width='3' stroke-linecap='round'/%3E%3Crect x='136' y='138' width='10' height='5' rx='2' fill='%23ff6b4a' transform='rotate(-50 141 140)'/%3E%3C/g%3E%3C/svg%3E");
+  }
+
+  h1, h2, h3 {
+    @apply font-display tracking-tight;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
