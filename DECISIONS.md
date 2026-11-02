@@ -91,3 +91,9 @@ A log of significant technical decisions and the reasoning behind them.
 **Decision:** `src/features/<feature>/` (join, quiz, challenges, show, leaderboard), shared `hooks/`, `lib/`, `components/ui/`. Pages are thin and only choose which feature to render based on `party_state.phase`.
 
 **Why:** Everything about one feature lives together, which makes it easy to find and change during a tight deadline.
+
+## 016 — Singleton rows live in a migration, not in the seed
+
+**Decision:** The `scoring_config` and `party_state` rows (`id = 1`) are inserted by the schema migration. `seed.sql` only holds sample content (questions, challenges).
+
+**Why:** `supabase db push` applies migrations to production but never runs `seed.sql`. Without those rows the app wouldn't start in production. Composite foreign keys (`(option_id, question_id) → quiz_options`) also guarantee in the schema itself that an answer or a key always points to an option of the same question.
