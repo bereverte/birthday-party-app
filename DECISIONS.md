@@ -97,3 +97,17 @@ A log of significant technical decisions and the reasoning behind them.
 **Decision:** The `scoring_config` and `party_state` rows (`id = 1`) are inserted by the schema migration. `seed.sql` only holds sample content (questions, challenges).
 
 **Why:** `supabase db push` applies migrations to production but never runs `seed.sql`. Without those rows the app wouldn't start in production. Composite foreign keys (`(option_id, question_id) → quiz_options`) also guarantee in the schema itself that an answer or a key always points to an option of the same question.
+
+## 014 — Reads through RLS, sensitive writes through RPCs
+
+**Decision:** RLS is enabled on every table. Policies decide who can **read** each row (mostly "everyone signed in", with exceptions for answers, votes and quiz content). Direct **writes** are allowed only where they are harmless: a user's own `players` row, and host-only content tables. Anything involving points or server time (`quiz_answers`, `show_votes`, `points_ledger`, question status) has no write policy and is only written by functions. All privileges are revoked from the `anon` role.
+
+**Why:** The browser talks to Postgres through a public API key, so anyone can send arbitrary queries from DevTools. RLS is a filter Postgres adds to every query, row by row. Anonymous guests use the `authenticated` role (they get a real user after `signInAnonymously`); `anon` means "no session", so it gets nothing.
+
+**Column-level limits:** RLS filters rows, not columns. On `party_state` the host can update `phase`, `current_challenge_id` and `current_act_id` directly (column-level `GRANT UPDATE`), but question status and timestamps only change through `open/close/reveal_question`, which use server time.
+
+## 017 — Quiz questions hidden until they are opened
+
+**Decision:** Guests can only read the current question (and its options) once its status is no longer `idle`. The correct answer (`quiz_keys`) is visible to guests only when the current question is `revealed`. The host sees everything.
+
+**Why:** Otherwise any guest could read all questions in advance from DevTools and get the speed bonus. Policies compare against `party_state.current_question_id`, so the visibility follows the game automatically.
