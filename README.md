@@ -45,5 +45,18 @@ Architecture decisions and their reasoning are in [DECISIONS.md](DECISIONS.md).
 | `npx supabase stop` | Stop the local Supabase stack (data is kept) |
 | `npx supabase db reset` | Rebuild the database from `supabase/migrations` and `supabase/seed.sql` |
 | `npx supabase migration new <name>` | Create a new migration file |
+| `npm run db:types` | Regenerate `src/lib/database.types.ts` after a migration |
+| `npm run db:test` | Run the database tests in `supabase/tests` (pgTAP) |
 | `npm run build` | Type-check and build for production |
 | `npm run lint` | Lint with oxlint |
+
+## Making a user the host
+
+The host signs in with a magic link (emails land in Mailpit locally) and joins the party like any player. Then, in Supabase Studio → SQL Editor:
+
+```sql
+insert into public.hosts (user_id)
+select id from auth.users where email = '<host email>';
+```
+
+In production, run the same query from the Supabase dashboard SQL Editor.
