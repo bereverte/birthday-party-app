@@ -1,0 +1,191 @@
+# Preparació d'entrevistes
+
+Explicacions de les decisions del projecte, per fases, preparades per contar-les en una entrevista. Cada punt té **la frase** (el resum en una línia), l'explicació i, de vegades, una **pregunta de seguiment** que et podrien fer.
+
+El detall tècnic complet de cada decisió és a [DECISIONS.md](../DECISIONS.md) (els números entre parèntesis hi remeten).
+
+---
+
+## Presentació del projecte (30 segons)
+
+> "És una app en temps real per a una festa d'aniversari d'unes 30 persones. Els convidats entren escanejant un QR amb el mòbil, sense registrar-se, i juguen un quiz estil Kahoot sobre l'amfitriona, unes proves i un show final amb votacions. La vaig fer amb React, TypeScript i Supabase. El més interessant és com he fet que funcione bé amb mòbils amb dades, on les connexions cauen contínuament: la base de dades és l'única font de veritat, Realtime només avisa, i tota la puntuació es calcula al servidor perquè ningú puga fer trampa."
+
+---
+
+## Fase 1 — Base del projecte i entorn local
+
+### Supabase en local amb Docker (012)
+**La frase:** "Tota la base de dades és reproduïble des de git."
+
+Desenvolupe contra un Supabase complet al portàtil (Postgres, Auth, Realtime, Studio, Mailpit) que arranca la CLI amb Docker. L'schema és a `supabase/migrations/` i les dades d'exemple a `seed.sql`. `supabase db reset` reconstrueix la BD des de zero en segons. A producció s'apliquen les mateixes migracions amb `supabase db push`.
+
+**Per què:** és gratis, ràpid i funciona sense connexió. A més, els magic links arriben a Mailpit en local, i així no gaste el límit d'emails del servidor de producció.
+
+**Pregunta de seguiment:** *Per què el seed no té les files "singleton"?* → Perquè `db push` no executa mai `seed.sql`. Si `party_state` o `scoring_config` estigueren només al seed, l'app no arrancaria a producció. Per això van dins d'una migració (016).
+
+### Un únic client de Supabase, tipat
+**La frase:** "Els tipus es generen des de la BD, així que si canvia l'schema, TypeScript m'avisa."
+
+Hi ha un sol client a `src/lib/supabase.ts`, tipat amb `database.types.ts`, que genera `supabase gen types`. Si canvie una columna i no actualitze el codi, el build falla.
+
+### Estructura de carpetes per funcionalitat (013)
+**La frase:** "Tot el que és del quiz està junt."
+
+Organitze el codi en `src/features/<feature>/` (join, quiz, challenges, show, leaderboard), més `hooks/`, `lib/` i `components/ui/` compartits. Les pàgines són primes: només decideixen què es mostra segons la fase de la festa.
+
+**Per què:** amb un termini ajustat, trobar i canviar les coses ràpid val més que una arquitectura per capes.
+
+### Rate limit dels sign-ins anònims (011)
+**La frase:** "Amb dades mòbils, 30 persones poden compartir la mateixa IP."
+
+Supabase permet, per defecte, 30 sign-ins anònims per hora i per IP. Els operadors mòbils fan servir CGNAT, és a dir, molts mòbils ixen a Internet amb la mateixa IP pública. Si tots entren alhora, podríem tocar el límit. L'he pujat a 300. Reconnectar no compta, perquè la sessió es guarda al navegador.
+
+---
+
+## Fase 2 — Model de dades, seguretat i lògica al servidor
+
+### La BD és l'única font de veritat; Realtime és un timbre (001)
+**La frase:** "Realtime no em porta les dades, només m'avisa que alguna cosa ha canviat."
+
+Tot l'estat del joc viu a Postgres. Quan arriba un avís de Realtime, el client torna a llegir de la BD. Cap client depén d'haver rebut tots els missatges: si se'n perd un, la següent lectura ho arregla. (La implementació al frontend és a la fase 3.)
+
+### `party_state`: una fila fa de màquina d'estats (002)
+**La frase:** "Qualsevol mòbil llig una fila i ja sap què ha de pintar."
+
+Una taula amb una sola fila (`id = 1`) guarda la fase actual (lobby, quiz, proves, show, final), la pregunta actual i el seu estat, i les hores del servidor en què s'obri i es tanca. Qui es reconnecta llig eixa fila i ja està al dia. Com que només hi ha una festa, no hi ha taula `parties`.
+
+### Un sol registre de punts i dos rànquings com a vistes (003)
+**La frase:** "Com un extracte bancari: guarde cada moviment, mai el total."
+
+Cada punt donat és una fila de `points_ledger` (jugador, punts, d'on ve). No hi ha cap total guardat. Els dos rànquings (Quiz i Festa) són vistes que sumen el ledger filtrant per origen. Un rànquing nou és només una vista nova, sense migrar dades.
+
+**Idempotència:** una restricció `unique(player_id, source_type, source_id)` fa que tancar una pregunta dues vegades no duplique els punts, i que tornar a puntuar una prova sobreescriga en lloc de sumar (així es poden corregir errors).
+
+**Pregunta de seguiment:** *I el rendiment de sumar cada vegada?* → Amb 30 persones i uns centenars de files és insignificant. A gran escala hi posaria una vista materialitzada o una taula de totals actualitzada per trigger.
+
+### L'amfitriona és administradora i jugadora alhora (004)
+**La frase:** "Separe qui pot controlar el joc de qui juga."
+
+Té una fila a `hosts` (permisos) i una altra a `players` (participació). Juga a les proves i al show però no al quiz, perquè el quiz va sobre ella. `submit_answer` la rebutja i el rànquing del quiz l'exclou.
+
+### La resposta correcta, en una taula a part (005)
+**La frase:** "RLS filtra files, no columnes, així que l'amague en una altra taula."
+
+Si `is_correct` fora una columna de `quiz_options`, qualsevol convidat la veuria amb DevTools. La resposta correcta viu a `quiz_keys`, que només pot llegir l'amfitriona, o tothom un cop s'ha revelat la pregunta.
+
+### RLS per a les lectures i RPC per a les escriptures sensibles (014)
+**La frase:** "El navegador parla amb Postgres amb una clau pública, així que la seguretat ha d'estar a la BD."
+
+Qualsevol pot enviar consultes des de DevTools. RLS és un filtre que Postgres afegeix a cada consulta, fila per fila. Les **lectures** les controlen les policies. Les **escriptures** que impliquen punts o l'hora del servidor no tenen cap policy d'escriptura: només les fan funcions SQL. Al rol `anon` (sense sessió) li he tret tots els permisos. Els convidats anònims fan servir el rol `authenticated`, perquè tenen un usuari de veritat.
+
+**Restricció per columnes:** l'amfitriona pot canviar `phase` directament (amb un `GRANT UPDATE` només d'eixa columna), però l'estat de la pregunta només el canvien `open/close/reveal_question`, que fan servir l'hora del servidor.
+
+### Les preguntes s'amaguen fins que s'obrin (017)
+**La frase:** "Si no, algú es llegiria totes les preguntes per endavant i guanyaria el bonus de velocitat."
+
+Els convidats només veuen la pregunta actual, i només quan ja s'ha obert. Les policies la comparen amb `party_state.current_question_id`, així que la visibilitat segueix el joc sola.
+
+### Puntuació al servidor amb hores del servidor (006)
+**La frase:** "No em fie mai del rellotge del client."
+
+L'hora de cada resposta la posa Postgres (`default now()`). Punts per una resposta correcta = punts base + bonus × (1 − temps tardat / temps límit). El client només fa servir `server_now()` per pintar el compte enrere.
+
+**Qui tanca la pregunta:** el dispositiu de l'amfitriona crida `close_question()` quan s'acaba el temps. No cal cron: si es retarda, no passa res, perquè `submit_answer` ja rebutja les respostes fora de temps.
+
+### Constants de puntuació en una taula (007)
+**La frase:** "Puc canviar els punts des de Studio sense redesplegar."
+
+Com que la puntuació es calcula en SQL, les constants han de viure a la BD. Hi ha una fila de `scoring_config` que també llig el frontend per pintar coses com "+500".
+
+### Funcions `security definer` protegides (015)
+**La frase:** "Una funció definer s'executa amb els permisos de la propietària, així que ha de comprovar ella mateixa qui la crida."
+
+Cada una:
+1. comprova `auth.uid()` i `is_host()`, perquè se salta RLS;
+2. fixa `search_path = ''` i fa servir noms complets (`public.players`), perquè ningú puga fer-li executar una taula o funció falsa amb privilegis de propietària;
+3. té el permís `EXECUTE` llevat a `public` i `anon`, perquè Postgres el dona a tothom per defecte.
+
+Regla: només faig servir definer quan qui crida ha de fer una cosa que no podria fer directament, i de manera controlada.
+
+### La cursa entre respondre i tancar (015)
+**La frase:** "Cap resposta pot entrar després de calcular els punts."
+
+`submit_answer` llig `party_state` amb `FOR SHARE` i `close_question` amb `FOR UPDATE`. Les respostes poden anar en paral·lel entre elles, però el tancament espera que acaben les que estan en marxa, i una resposta que arriba després del tancament ja veu `closed`. `cast_vote` i `close_voting` fan el mateix amb `show_acts`.
+
+**Pregunta de seguiment:** *Per què no un nivell d'aïllament més estricte?* → Amb un bloqueig de fila puntual n'hi ha prou i és més previsible; `SERIALIZABLE` obligaria a reintentar transaccions des del client.
+
+### Regles del show a la BD: no es pot votar la teua actuació (009)
+**La frase:** "Una regla a la BD no la pot saltar un client modificat."
+
+`cast_vote` rebutja els membres de l'actuació. La clau primària `(act_id, voter_id)` permet un sol vot per persona i actuació (si tornes a votar, el canvies).
+
+### Proves per equips: una crida, molts jugadors (008)
+**La frase:** "L'amfitriona estarà ocupada; una acció per equip és més ràpida i dona menys errors."
+
+### Tests de BD amb pgTAP (018)
+**La frase:** "Les regles viuen a la BD, així que les testege allí, sense navegador."
+
+Cada test s'executa dins d'una transacció que es desfà al final. Per actuar com un usuari, canvie al rol `authenticated` i pose `request.jwt.claims`, que és exactament el que fa Supabase en cada petició. Així RLS, `auth.uid()` i les RPC es comporten com a producció. Com que `now()` es queda fix dins d'una transacció, els tests posen les hores explícitament en lloc d'esperar.
+
+---
+
+## Fase 3 — Frontend base i entrada a la festa
+
+### El patró "timbre → refetch" (019)
+**La frase:** "Cap client depén d'haver rebut tots els esdeveniments."
+
+Realtime no em porta les dades: només m'avisa que alguna cosa ha canviat, i jo torne a llegir la BD, que és l'única font de veritat. Torne a llegir en cinc moments:
+- quan arriba un avís,
+- quan el canal queda connectat (també després de cada reconnexió),
+- quan la pestanya torna a ser visible,
+- quan el navegador torna a tindre connexió,
+- quan l'amfitriona prem "force resync".
+
+Si un mòbil perd avisos perquè tenia la pantalla bloquejada, la següent lectura ho arregla.
+
+**Agrupació de lectures:** només faig una lectura alhora. Si arriben avisos mentre llig, marque les dades com a "brutes" i en faig una més en acabar. 30 joins seguits → 2 lectures, no 30, i una resposta vella mai trepitja una de nova.
+
+**Pregunta de seguiment:** *Per què no fas servir les dades que porta l'esdeveniment?* → Perquè els esdeveniments es poden perdre o arribar desordenats. Si no hi depenc, eixos errors no poden existir. El cost és una lectura més, i amb 30 persones és insignificant.
+
+**Detall que demostra que ho he investigat:** cada ús del hook té un nom de canal únic, perquè `supabase.channel(nom)` retorna el canal existent amb eixe nom i `removeChannel` és asíncron. Amb StrictMode, React munta i desmunta dues vegades, i em tornaria un canal que s'està tancant.
+
+### Presence per a "qui està en línia" (020)
+**La frase:** "Estar connectat és un estat del moment, no una dada."
+
+Si ho guardara a la BD (`last_seen`), caldria escriure-hi cada pocs segons, i un mòbil sense bateria continuaria apareixent com a connectat. Amb Presence, cada client s'apunta al canal i, quan li cau la connexió, el servidor de Realtime el trau i avisa tothom. "Qui ha vingut" sí que es guarda (taula `players`, via Postgres Changes); "qui hi és ara" va per Presence.
+
+L'id de l'usuari va dins del payload, no com a clau, així que dues pestanyes de la mateixa persona compten com una i el canal no depén de qui ha iniciat sessió. Presence es perd quan cau la connexió, per això torne a apuntar-me cada vegada que el canal queda connectat.
+
+### La sessió anònima en reconnectar (021)
+**La frase:** "Reobrir la pestanya és el mateix usuari, sense tornar a registrar-se."
+
+`signInAnonymously()` crea un usuari de veritat a `auth.users`, i supabase-js guarda els tokens al `localStorage` i els renova sol. Quan el convidat torna, és el mateix `auth.uid()`, i com que `players.id = auth.uid()` va directament al lobby, sense gastar un altre accés del límit. Només la perd si esborra les dades del navegador; aleshores entra com a persona nova i l'amfitriona pot eliminar el duplicat.
+
+"Qui soc jo" el trac de la llista de jugadors en directe, així que si l'amfitriona m'elimina, torne al formulari automàticament.
+
+### "Force resync" per Broadcast en un canal públic (022)
+**La frase:** "El missatge no porta dades, només provoca una lectura que ja passa per RLS."
+
+És un botó de rescat per si un mòbil sembla penjat. Qualsevol podria enviar `resync`, però només faria que els clients llegiren el que ja poden llegir. Un canal privat amb policies afegiria complexitat sense guanyar seguretat. Broadcast no s'envia a qui l'emet, així que l'amfitriona rellig les seues dades directament.
+
+### Eliminar jugadors només si no tenen activitat (024)
+**La frase:** "Una cascada a la BD pot esborrar més del que sembla."
+
+Totes les claus foranes cap a `players` són `on delete cascade`. Eliminar un jugador actiu s'emportaria els seus punts, les seues respostes i els seus vots (canviaria la mitjana de les actuacions), i fins i tot les actuacions que ha creat, amb els altres membres dins. La policy només deixa eliminar jugadors sense activitat, que són els duplicats. La comprovació és una funció definer perquè ha de veure totes les files, sense els filtres de RLS de qui la crida.
+
+**Pregunta de seguiment:** *Per què no canvies les FK a `restrict`?* → També seria vàlid. He preferit la policy perquè la regla és "només l'amfitriona, i només duplicats", i així la UI rep "0 files" i pot mostrar un missatge clar.
+
+### Rellotge del servidor
+**La frase:** "Mesure el desfasament amb el viatge d'anada i tornada més curt."
+
+Faig 3 crides a `server_now()`, em quede la més ràpida i calcule `desfasament = hora del servidor − punt mig del viatge`. Com més curt és el viatge, més precís és el punt mig. Només el faig servir per pintar el compte enrere; puntuar, mai.
+
+### Disseny i rendiment amb dades mòbils (023)
+**La frase:** "Un aspecte propi construït amb uns pocs tokens."
+
+Estil "festa de paper / stickers": vores gruixudes, ombres dures desplaçades i confeti de fons, definit com a tokens al `@theme` de Tailwind v4, de manera que les pantalles noves l'hereten. La font l'allotge dins de l'app (no depén de Google Fonts) i només carregue l'eix de gruix: 41 KB en lloc de 131 KB. Les animacions respecten `prefers-reduced-motion`.
+
+### Com ho he provat
+**La frase:** "He provat la reconnexió de veritat, no només el cas feliç."
+
+A més dels tests pgTAP, vaig automatitzar Chrome amb dos convidats i l'amfitriona: magic link real llegit de Mailpit, convidat posat offline mentre canviava la fase i comprovació que es posava al dia en tornar, Presence en tancar un mòbil, i force resync comprovant que el convidat tornava a fer la petició.
