@@ -82,7 +82,7 @@ export function HostPanel({ me, party, players, online, status, refetchAll }: Pr
           <EmojiAvatar emoji={me.emoji} seed={me.id} />
           <div>
             <p className="text-sm text-ink-soft">👑 Amfitriona</p>
-            <h1 className="text-3xl leading-none font-extrabold">Control de la festa</h1>
+            <h1 className="text-3xl leading-none font-bold">Control de la festa</h1>
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -94,7 +94,7 @@ export function HostPanel({ me, party, players, online, status, refetchAll }: Pr
       </header>
 
       {notice && (
-        <p role="status" className="animate-pop rounded-2xl border-3 border-ink bg-sun px-4 py-3 font-bold shadow-sticker-sm">
+        <p role="status" className="animate-pop rounded-2xl bg-sun-soft px-4 py-3 font-semibold shadow-card">
           {notice}
         </p>
       )}
@@ -102,7 +102,7 @@ export function HostPanel({ me, party, players, online, status, refetchAll }: Pr
       <div className="grid gap-6 lg:grid-cols-[1fr_1.2fr]">
         <div className="flex flex-col gap-6">
           <Card className="flex flex-col gap-4">
-            <h2 className="text-2xl font-extrabold">Fase</h2>
+            <h2 className="text-2xl font-bold">Fase</h2>
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-2">
               {PHASES.map((phase) => {
                 const current = party.phase === phase
@@ -114,7 +114,6 @@ export function HostPanel({ me, party, players, online, status, refetchAll }: Pr
                     loading={busy === `phase:${phase}`}
                     disabled={busy !== null && busy !== `phase:${phase}`}
                     onClick={() => void changePhase(phase)}
-                    className={current ? '-rotate-2' : ''}
                   >
                     {phaseLabels[phase]}
                   </Button>
@@ -124,7 +123,7 @@ export function HostPanel({ me, party, players, online, status, refetchAll }: Pr
           </Card>
 
           <Card tone="lilac" className="flex flex-col gap-3">
-            <h2 className="text-2xl font-extrabold">Rescat</h2>
+            <h2 className="text-2xl font-bold">Rescat</h2>
             <p className="text-sm">Si algun mòbil s’ha quedat penjat, fes que tots tornen a llegir l’estat.</p>
             <Button variant="secondary" loading={busy === 'resync'} onClick={() => void forceResync()}>
               🔄 Force resync
@@ -140,7 +139,7 @@ export function HostPanel({ me, party, players, online, status, refetchAll }: Pr
 
         <Card className="flex flex-col gap-4">
           <div className="flex items-baseline justify-between gap-2">
-            <h2 className="text-2xl font-extrabold">Jugadors</h2>
+            <h2 className="text-2xl font-bold">Jugadors</h2>
             <p className="text-sm font-bold text-ink-soft">
               {players.length} dins · {onlineCount} en línia
             </p>
@@ -148,7 +147,7 @@ export function HostPanel({ me, party, players, online, status, refetchAll }: Pr
           {players.length === 0 ? (
             <p className="text-ink-soft">Encara no ha entrat ningú.</p>
           ) : (
-            <ul className="flex flex-col divide-y-2 divide-ink/10">
+            <ul className="flex flex-col divide-y divide-line">
               {players.map((player) => (
                 <li key={player.id} className="flex items-center gap-3 py-2">
                   <EmojiAvatar emoji={player.emoji} seed={player.id} size="sm" online={online.has(player.id)} />

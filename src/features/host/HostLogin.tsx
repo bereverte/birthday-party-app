@@ -30,10 +30,10 @@ export function HostLogin() {
   return (
     <Screen>
       <header className="flex flex-col items-center gap-3 pt-6 text-center">
-        <span className="animate-wiggle text-5xl" aria-hidden>
+        <span className="text-5xl" aria-hidden>
           👑
         </span>
-        <h1 className="text-4xl leading-none font-extrabold">Zona de l’amfitriona</h1>
+        <h1 className="text-4xl leading-none font-bold">Zona de l’amfitriona</h1>
         <p className="text-ink-soft">T’enviarem un enllaç per entrar sense contrasenya.</p>
       </header>
 
@@ -42,7 +42,7 @@ export function HostLogin() {
           <span className="text-5xl" aria-hidden>
             💌
           </span>
-          <p className="font-display text-2xl font-extrabold">Mira el correu!</p>
+          <p className="font-display text-2xl font-bold">Mira el correu!</p>
           <p>
             Hem enviat l’enllaç a <strong className="break-all">{sentTo}</strong>. Obri’l en aquest mateix dispositiu.
           </p>
@@ -72,7 +72,7 @@ export function HostLogin() {
             required
           />
           {error && (
-            <p role="alert" className="rounded-2xl border-3 border-ink bg-tomato/20 px-4 py-3 font-bold">
+            <p role="alert" className="rounded-2xl bg-tomato/15 px-4 py-3 font-semibold">
               {error}
             </p>
           )}

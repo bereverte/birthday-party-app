@@ -24,7 +24,7 @@ export function PhasePlaceholder({ phase, status }: { phase: Exclude<Phase, 'lob
           <span className="animate-float text-7xl" aria-hidden>
             {emoji}
           </span>
-          <h1 className="text-4xl font-extrabold">{title}</h1>
+          <h1 className="text-4xl font-bold">{title}</h1>
           <p className="text-lg">{text}</p>
         </Card>
       </div>

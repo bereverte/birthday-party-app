@@ -11,12 +11,12 @@ export function NotHost({ email, onRecheck }: { email: string; onRecheck: () => 
         <span className="text-5xl" aria-hidden>
           🔒
         </span>
-        <h1 className="text-3xl font-extrabold">Aquest compte no és d’amfitriona</h1>
+        <h1 className="text-3xl font-bold">Aquest compte no és d’amfitriona</h1>
         <p>
           Has entrat com a <strong className="break-all">{email}</strong>, però no té permisos per controlar la festa.
         </p>
         <p className="text-sm text-ink-soft">Per fer-lo amfitrió, executa això al SQL Editor de Supabase:</p>
-        <pre className="overflow-x-auto rounded-2xl border-3 border-ink bg-ink p-3 text-xs text-cream">
+        <pre className="overflow-x-auto rounded-2xl bg-ink p-3 text-xs text-white">
           {`insert into public.hosts (user_id)\nselect id from auth.users\nwhere email = '${email}';`}
         </pre>
         <div className="flex flex-col gap-3 sm:flex-row">
