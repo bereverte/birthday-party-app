@@ -1,9 +1,8 @@
-import { useState, type FormEvent } from 'react'
+import { useId, useState, type FormEvent } from 'react'
 import { Button } from '../../components/ui/Button'
 import { Card } from '../../components/ui/Card'
 import { EmojiAvatar } from '../../components/ui/EmojiAvatar'
 import { Screen } from '../../components/ui/Screen'
-import { TextInput } from '../../components/ui/TextInput'
 import { friendlyError } from '../../lib/errors'
 import { supabase } from '../../lib/supabase'
 
@@ -22,6 +21,7 @@ type Props = {
 }
 
 export function JoinForm({ userId, onJoined, title = 'Entra a la festa!' }: Props) {
+  const nameId = useId()
   const [name, setName] = useState('')
   const [emoji, setEmoji] = useState(() => EMOJIS[Math.floor(Math.random() * EMOJIS.length)])
   const [saving, setSaving] = useState(false)
@@ -51,23 +51,24 @@ export function JoinForm({ userId, onJoined, title = 'Entra a la festa!' }: Prop
       </header>
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+        {/* The name is typed straight into the preview card, next to the avatar. */}
         <Card className="flex items-center gap-4">
           <EmojiAvatar key={emoji} emoji={emoji} seed={userId} size="lg" />
-          <p className="min-w-0 font-display text-3xl font-bold break-words">
-            {trimmed || <span className="text-ink-soft/50">El teu nom</span>}
-          </p>
+          <label htmlFor={nameId} className="sr-only">
+            Nom
+          </label>
+          <input
+            id={nameId}
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            maxLength={30}
+            autoComplete="nickname"
+            enterKeyHint="done"
+            placeholder="El teu nom"
+            required
+            className="min-w-0 flex-1 border-b-2 border-line bg-transparent py-1 font-display text-2xl font-bold transition-colors outline-none placeholder:text-ink-soft/50 focus:border-pink"
+          />
         </Card>
-
-        <TextInput
-          label="Nom"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          maxLength={30}
-          autoComplete="nickname"
-          enterKeyHint="done"
-          placeholder="Com et diuen?"
-          required
-        />
 
         <fieldset className="flex flex-col gap-2">
           <legend className="mb-1.5 font-display font-bold">Emoji</legend>
