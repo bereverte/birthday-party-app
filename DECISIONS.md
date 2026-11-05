@@ -175,3 +175,27 @@ Reads are **coalesced**: only one runs at a time, and events that arrive during 
 **Decision:** The `players` delete policy is now `is_host() and not player_has_activity(id)`. `player_has_activity` is a `security definer` function that checks the ledger, quiz answers, votes, act memberships and acts created. In the UI, a refused delete returns 0 rows (not an error) and the host sees "already has activity".
 
 **Why:** Every foreign key to `players` is `on delete cascade`. Removing an active player would silently delete their points, answers and votes (changing act averages), and even the acts they created, along with the other members. Their teammates' points for that act would stay orphaned in the ledger, because `source_id` isn't a foreign key. The remove button is meant for duplicates, which have no activity. The rule lives in the database like the others. The helper is definer so it sees every row regardless of the caller's RLS.
+
+## 025 — Deploy before building the game features
+
+**Decision:** Deploy in phase 4, before the quiz. The frontend is on Vercel (`https://birthday-party-app-brown.vercel.app`), connected to the GitHub repo, so every push to `main` deploys to production. The two environment variables (`VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`) are set by hand in Vercel. The Vercel–Supabase marketplace integration is not used.
+
+**Why:** Local Docker can't reproduce what matters on the party day: HTTPS, phones on mobile data, the real magic link email and the real Realtime server. Deploying early means every later feature gets tested in those conditions for free, not in a rush the day before. The integration would create variables with Next.js names (`NEXT_PUBLIC_*`) that a Vite app doesn't read, and could create a second Supabase project. Two variables by hand are clearer.
+
+## 026 — Cloud schema from migrations, cloud Auth config by hand
+
+**Decision:** The cloud database is built with `supabase link` + `supabase db push --remote`, which applies `supabase/migrations/` and records them in the migration history. `seed.sql` is not pushed. The cloud Auth settings are set by hand in the dashboard, not with `supabase config push`: anonymous sign-ins on, sign-ups on, anonymous rate limit 300/hour/IP (DECISIONS 011), Site URL set to the Vercel URL and `<vercel url>/host` added to the redirect URLs. The host row is inserted from the dashboard SQL Editor after her first login.
+
+**Why:** Migrations make the cloud schema identical to the one the pgTAP tests run against, and later phases only push their new migrations. The seed is sample data for development; real quiz content will be entered separately. `config.toml` describes the local stack (localhost URLs), so `config push` would overwrite the production redirect URLs and break the magic link. There are only a few Auth settings, and they're set once. The redirect allow-list is a security feature: Supabase only redirects the magic link to URLs on it. Without custom SMTP, Supabase sends about 2 auth emails per hour, which is enough for one host.
+
+## 027 — Data API settings: keep default table grants
+
+**Decision:** When creating the cloud project: Data API on, "Automatically expose new tables" on, "Enable automatic RLS" off.
+
+**Why:** supabase-js talks to the database through the Data API. The RLS migration revokes table privileges from `anon` but relies on the default grants for `authenticated` (guests and the host). Without default grants, every query would fail with "permission denied". Access is still controlled by RLS, which the migrations enable explicitly on every table, so the automatic RLS trigger would add nothing and the cloud would differ from the local stack.
+
+## 028 — SPA rewrite on Vercel
+
+**Decision:** `vercel.json` rewrites every path to `/index.html`.
+
+**Why:** React Router handles routes in the browser. Without the rewrite, loading `/host` directly (which is where the magic link lands) or reloading any page other than `/` returns a 404 from Vercel, because there is no `host.html`. Built files like `/assets/*.js` are still served, because Vercel checks the file system before applying rewrites.

@@ -89,3 +89,20 @@ select id from auth.users where email = '<host email>';
 ```
 
 In production, run the same query from the Supabase dashboard SQL Editor.
+
+## Deploy
+
+Production: <https://birthday-party-app-brown.vercel.app>
+
+- **Frontend:** Vercel, connected to the GitHub repo. Every push to `main` deploys. `vercel.json` rewrites all routes to `index.html` (client-side routing). Environment variables in Vercel: `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY`.
+- **Database:** apply new migrations to the cloud project (never the seed):
+
+  ```bash
+  npx supabase link --project-ref <project ref>   # once
+  npx supabase db push --remote --dry-run          # check what will run
+  npx supabase db push --remote
+  ```
+
+  Without `--remote`, `db push` targets the local stack.
+- **Auth (dashboard, set once):** anonymous sign-ins on; anonymous rate limit 300/hour; Site URL = the Vercel URL; Redirect URLs include `<vercel url>/host`. Don't use `supabase config push`: `config.toml` holds the local URLs.
+- The free plan pauses a project after 7 days without activity.

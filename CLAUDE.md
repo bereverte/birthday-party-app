@@ -30,7 +30,9 @@ React + TypeScript + Tailwind (Vite), Supabase (Postgres + Realtime + Auth), dep
 - Phase 1 (done): Vite + React + TS + Tailwind v4 + React Router, local Supabase in Docker.
 - Phase 2 (done): full data model in `supabase/migrations/` (schema, RLS, RPCs, realtime), `seed.sql`, generated types, pgTAP tests.
 - Phase 3 (done): shared realtime infrastructure, guest join + lobby, host login + minimal panel, design system.
-- Next: quiz, then challenges, show, leaderboards, deploy.
+- Phase 4 (done): deploy. Production: https://birthday-party-app-brown.vercel.app (Vercel auto-deploys `main`). Cloud Supabase project ref `aljqfmjoapqmogvbwsne`, schema from migrations, no seed. See README "Deploy".
+- Next: quiz, then challenges, show, leaderboards.
+- Extra if time allows: avatar builder (e.g. DiceBear) to replace the emoji picker.
 
 ## Reuse before writing new code
 
@@ -47,7 +49,8 @@ React + TypeScript + Tailwind (Vite), Supabase (Postgres + Realtime + Auth), dep
 - `supabase.channel(topic)` returns an existing channel with that topic, and `removeChannel` is async. Per-component channels need a unique topic, or a StrictMode remount gets a closing channel.
 - Don't use `crypto.randomUUID()` in the frontend: it doesn't exist on insecure origins (a phone testing over `http://192.168…`).
 - Every foreign key to `players` cascades. Player removal is limited to players without activity (DECISIONS 024).
-- After a migration: `npx supabase db reset`, `npm run db:types`, `npm run db:test`. Add pgTAP tests for new database rules.
+- After a migration: `npx supabase db reset`, `npm run db:types`, `npm run db:test`. Add pgTAP tests for new database rules. To ship it: `npx supabase db push --remote --dry-run`, then without `--dry-run` (without `--remote` it targets local).
+- Never `supabase config push`: `config.toml` has localhost URLs and would break production Auth. Cloud Auth settings are set by hand (DECISIONS 026).
 - When running the Supabase CLI from the Bash tool, append `< /dev/null` or it hangs.
 - Phone testing: `npm run dev:mobile` with `.env.mobile.local` (README). The magic link doesn't work from a phone locally.
 

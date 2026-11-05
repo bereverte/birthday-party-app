@@ -189,3 +189,34 @@ Estil "festa de paper / stickers": vores gruixudes, ombres dures desplaçades i 
 **La frase:** "He provat la reconnexió de veritat, no només el cas feliç."
 
 A més dels tests pgTAP, vaig automatitzar Chrome amb dos convidats i l'amfitriona: magic link real llegit de Mailpit, convidat posat offline mentre canviava la fase i comprovació que es posava al dia en tornar, Presence en tancar un mòbil, i force resync comprovant que el convidat tornava a fer la petició.
+
+## Fase 4 — Deploy
+
+### Desplegar abans de fer el joc (025)
+**La frase:** "He desplegat abans del quiz perquè els problemes de producció no es veuen en local."
+
+En local no hi ha HTTPS, ni mòbils amb 4G, ni emails reals, ni el servidor de Realtime de veritat. Desplegant d'hora, cada funcionalitat nova es prova en eixes condicions només fent `git push`: Vercel està connectat al repo i desplega `main` automàticament. Les dues variables d'entorn les he posat a mà, sense la integració de Supabase per a Vercel, perquè crea variables amb noms de Next.js (`NEXT_PUBLIC_*`) que Vite no llegeix.
+
+**Pregunta de seguiment:** *La clau de Supabase és pública al frontend, no és un problema?* → No, la publishable key està feta per anar al navegador. La seguretat no depén d'amagar-la, sinó de RLS i de les RPC, que comproven qui crida.
+
+### L'esquema ve de les migracions; la config d'Auth, a mà (026)
+**La frase:** "El núvol té exactament l'esquema que he testejat en local."
+
+`supabase db push --remote` aplica les migracions i n'apunta l'historial, així que a les fases següents només s'aplicaran les noves. El `seed.sql` no s'hi puja: són dades de prova. La configuració d'Auth (anònims, rate limit de 300, URLs) l'he feta al panell i no amb `config push`, perquè el `config.toml` té les URLs de localhost i trencaria el magic link de producció. La llista de redirect URLs és una protecció: Supabase només envia el magic link a adreces de la llista.
+
+**Detall que demostra que ho he investigat:** sense `--remote`, `db push` apunta a la base de dades local. Sempre faig primer un `--dry-run` per veure quines migracions s'aplicaran.
+
+### Permisos de la Data API (027)
+**La frase:** "He llegit les meues migracions abans de fer cas a la recomanació del panell."
+
+En crear el projecte, Supabase recomana no exposar automàticament les taules noves. Però la meua migració de RLS només trau els permisos a `anon` i compta amb els permisos per defecte per a `authenticated`. Si haguera desmarcat l'opció, totes les consultes haurien fallat amb "permission denied". La seguretat de veritat la fa RLS, activat explícitament a totes les taules.
+
+### Rewrite per a una SPA (028)
+**La frase:** "El magic link torna a `/host`, i eixa ruta només existeix al navegador."
+
+React Router gestiona les rutes al client. Sense el rewrite de `vercel.json` cap a `index.html`, entrar directament a `/host` o recarregar qualsevol pàgina donaria un 404, perquè no hi ha cap fitxer `host.html`.
+
+### Com ho he provat
+**La frase:** "He provat en producció com serà el dia de la festa."
+
+Amfitriona al portàtil amb el magic link real, convidat al mòbil amb dades mòbils (sense wifi), el convidat apareixent al panell en temps real, reconnexió tancant la pestanya, i force resync.
