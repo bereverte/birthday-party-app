@@ -1,29 +1,50 @@
 @import 'tailwindcss';
 @import '@fontsource-variable/bricolage-grotesque';
+@import '@fontsource-variable/manrope';
 
-/* "Paper party / stickers": cream paper, saturated confetti colours, thick
-   ink outlines and hard offset shadows, like cut-out stickers. */
+/* "Soft": pastel gradient background, white surfaces with diffuse shadows,
+   no outlines. Vivid colours are kept for actions and answers; pastels
+   (the *-soft tokens) fill avatars and tinted cards. */
 @theme {
   --font-display: 'Bricolage Grotesque Variable', ui-sans-serif, system-ui, sans-serif;
-  --font-sans: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-sans: 'Manrope Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
 
-  --color-cream: #fff6e9;
-  --color-paper: #fffdf8;
-  --color-ink: #2b1240;
-  --color-ink-soft: #6b5a7a;
+  --color-ink: #2a1d3a;
+  --color-ink-soft: #7d7190;
+  --color-paper: #ffffff;
+  --color-line: #e6def0;
+
+  --color-bg-from: #fff0f6;
+  --color-bg-via: #f2efff;
+  --color-bg-to: #e9f8f1;
+
   --color-pink: #ff4f9a;
-  --color-sun: #ffc93c;
-  --color-mint: #3ddc97;
-  --color-lilac: #a78bfa;
-  --color-sky: #4cc9f0;
-  --color-tomato: #ff6b4a;
+  --color-coral: #ff8f6b;
+  --color-sun: #f0a321;
+  --color-mint: #22c27a;
+  --color-lilac: #8b6cf6;
+  --color-sky: #4f7df5;
+  --color-tomato: #ef4f4f;
 
+  --color-pink-soft: #ffd1e3;
+  --color-coral-soft: #ffd9c9;
+  --color-sun-soft: #ffe8a8;
+  --color-mint-soft: #c6f2dc;
+  --color-lilac-soft: #ddd3ff;
+  --color-sky-soft: #cdeeff;
+
+  --shadow-card: 0 1px 2px rgb(60 30 90 / 0.06), 0 10px 28px -10px rgb(90 50 140 / 0.22);
+  --shadow-lift: 0 10px 24px -10px rgb(42 29 58 / 0.6);
+  --shadow-glow: 0 14px 30px -14px rgb(255 79 154 / 0.8);
+
+  /* Legacy sticker tokens, removed once every screen has moved over. */
+  --color-cream: #fff6e9;
   --shadow-sticker: 4px 4px 0 0 var(--color-ink);
   --shadow-sticker-sm: 2px 2px 0 0 var(--color-ink);
   --shadow-sticker-lg: 6px 6px 0 0 var(--color-ink);
-
   --animate-wiggle: wiggle 2.6s ease-in-out infinite;
-  --animate-pop: pop 280ms cubic-bezier(0.3, 1.6, 0.6, 1) both;
+
+  --animate-pop: pop 280ms cubic-bezier(0.3, 1.4, 0.6, 1) both;
   --animate-float: float 3s ease-in-out infinite;
 
   @keyframes wiggle {
@@ -31,24 +52,25 @@
     50% { transform: rotate(4deg); }
   }
   @keyframes pop {
-    from { transform: scale(0.6); opacity: 0; }
+    from { transform: scale(0.8); opacity: 0; }
     to { transform: scale(1); opacity: 1; }
   }
   @keyframes float {
     0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-8px); }
+    50% { transform: translateY(-6px); }
   }
 }
 
 @layer base {
   html {
     -webkit-tap-highlight-color: transparent;
+    background-color: var(--color-bg-via);
   }
 
   body {
-    @apply bg-cream font-sans text-ink antialiased;
-    /* Confetti tile: a few scattered shapes, kept faint so text stays readable. */
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'%3E%3Cg opacity='.35'%3E%3Crect x='18' y='22' width='14' height='6' rx='2' fill='%23ff4f9a' transform='rotate(-24 25 25)'/%3E%3Ccircle cx='118' cy='30' r='4' fill='%233ddc97'/%3E%3Crect x='96' y='104' width='14' height='6' rx='2' fill='%23ffc93c' transform='rotate(32 103 107)'/%3E%3Ccircle cx='40' cy='120' r='3.5' fill='%234cc9f0'/%3E%3Cpath d='M66 64q6-8 12 0t12 0' fill='none' stroke='%23a78bfa' stroke-width='3' stroke-linecap='round'/%3E%3Crect x='136' y='138' width='10' height='5' rx='2' fill='%23ff6b4a' transform='rotate(-50 141 140)'/%3E%3C/g%3E%3C/svg%3E");
+    @apply min-h-dvh font-sans text-ink antialiased;
+    background-image: linear-gradient(165deg, var(--color-bg-from) 0%, var(--color-bg-via) 55%, var(--color-bg-to) 100%);
+    background-attachment: fixed;
   }
 
   h1, h2, h3 {
