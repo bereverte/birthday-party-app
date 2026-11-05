@@ -52,7 +52,7 @@ export function JoinForm({ userId, onJoined, title = 'Entra a la festa!' }: Prop
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-6">
         {/* The name is typed straight into the preview card, next to the avatar. */}
-        <Card className="flex items-center gap-4">
+        <Card className="flex items-center gap-4 transition-shadow focus-within:ring-2 focus-within:ring-pink/40">
           <EmojiAvatar key={emoji} emoji={emoji} seed={userId} size="lg" />
           <label htmlFor={nameId} className="sr-only">
             Nom
@@ -66,7 +66,7 @@ export function JoinForm({ userId, onJoined, title = 'Entra a la festa!' }: Prop
             enterKeyHint="done"
             placeholder="El teu nom"
             required
-            className="min-w-0 flex-1 border-b-2 border-line bg-transparent py-1 font-display text-2xl font-bold transition-colors outline-none placeholder:text-ink-soft/50 focus:border-pink"
+            className="min-w-0 flex-1 bg-transparent py-1 font-display text-2xl font-bold outline-none placeholder:text-ink-soft/50"
           />
         </Card>
 
