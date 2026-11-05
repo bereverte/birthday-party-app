@@ -23,7 +23,7 @@ React + TypeScript + Tailwind (Vite), Supabase (Postgres + Realtime + Auth), dep
 - Points go to a single points ledger table; each ranking is a view summing it by source_type. The host plays challenges and the show, not the quiz.
 - Guest phones always show the full question, so a projector is optional. Host view (/host) must work on laptop or phone.
 - Minimal host rescue controls: force resync, close question now.
-- Mobile-first, festive design with personality, not template-looking.
+- Mobile-first, festive design with personality, not template-looking. Soft style: white cards with diffuse shadows, no outlines or tilts, one loud "party" card per screen at most.
 
 ## Status
 
@@ -31,6 +31,7 @@ React + TypeScript + Tailwind (Vite), Supabase (Postgres + Realtime + Auth), dep
 - Phase 2 (done): full data model in `supabase/migrations/` (schema, RLS, RPCs, realtime), `seed.sql`, generated types, pgTAP tests.
 - Phase 3 (done): shared realtime infrastructure, guest join + lobby, host login + minimal panel, design system.
 - Phase 4 (done): deploy. Production: https://birthday-party-app-brown.vercel.app (Vercel auto-deploys `main`). Cloud Supabase project ref `aljqfmjoapqmogvbwsne`, schema from migrations, no seed. See README "Deploy".
+- Phase 4.5 (done): visual redesign to the "soft" look (DECISIONS 029).
 - Next: quiz, then challenges, show, leaderboards.
 - Extra if time allows: avatar builder (e.g. DiceBear) to replace the emoji picker.
 

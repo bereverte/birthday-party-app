@@ -220,3 +220,17 @@ React Router gestiona les rutes al client. Sense el rewrite de `vercel.json` cap
 **La frase:** "He provat en producció com serà el dia de la festa."
 
 Amfitriona al portàtil amb el magic link real, convidat al mòbil amb dades mòbils (sense wifi), el convidat apareixent al panell en temps real, reconnexió tancant la pestanya, i force resync.
+
+## Fase 4.5 — Redisseny visual
+
+### Canviar tot l'estil sense tocar les pantalles (029)
+**La frase:** "Com que l'estil vivia en tokens i components, el redisseny va ser canviar-los a ells."
+
+L'estil d'adhesius em semblava massa infantil. Abans de tocar codi vaig fer una maqueta amb quatre direccions sobre les mateixes tres pantalles (entrar, sala d'espera i una pregunta) i en vaig triar una: fons pastel, targetes blanques amb ombra suau i sense contorns. Els canvis van ser sobretot als tokens del `@theme` i als components de `src/components/ui/`; a les pantalles només vaig traure classes puntuals (inclinacions, vores). Ho vaig fer abans del quiz perquè les pantalles noves ja nasquen amb l'estil definitiu.
+
+**Pregunta de seguiment:** *Per què no vas deixar la prop `tilt` per si de cas?* → Perquè una opció que el disseny ja no fa servir és codi mort que algú acabaria fent servir per error. TypeScript em va dir exactament quines pantalles la usaven.
+
+### Com ho he provat
+**La frase:** "He mirat cada pantalla en un navegador de veritat, no només que compilara."
+
+Vaig automatitzar Chrome a mida de mòbil: cinc convidats entrant, el formulari d'entrada, la sala d'espera i tot el flux de l'amfitriona (magic link de Mailpit, pantalla de "no ets amfitriona", panell) també a mida de portàtil. Les captures van destapar un tall al degradat de fons en pàgines llargues, que venia de `background-attachment: fixed`.

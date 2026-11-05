@@ -199,3 +199,9 @@ Reads are **coalesced**: only one runs at a time, and events that arrive during 
 **Decision:** `vercel.json` rewrites every path to `/index.html`.
 
 **Why:** React Router handles routes in the browser. Without the rewrite, loading `/host` directly (which is where the magic link lands) or reloading any page other than `/` returns a 404 from Vercel, because there is no `host.html`. Built files like `/assets/*.js` are still served, because Vercel checks the file system before applying rewrites.
+
+## 029 — Visual direction v2: "soft" (replaces 023's look)
+
+**Decision:** Replace the sticker look with a softer one: pastel gradient background, white surfaces with diffuse shadows, no outlines, no tilted cards or wiggling emoji. Vivid colours are kept for actions and (later) quiz answers; pastel `*-soft` tokens fill avatars and tinted cards. Primary buttons are dark pills, and the one loud element per screen is the "party" card (pink-to-coral gradient). Bricolage Grotesque stays for headings at weight 700; body text moves to Manrope, also self-hosted with `@fontsource-variable` (the browser only downloads the Latin subset, 25 kB). Done as phase 4.5, before the quiz, so new screens are built in the final style.
+
+**Why:** The sticker look felt too childish for an adult party. Four directions were mocked up on the same three screens (join, lobby, quiz) and compared before touching the code. Because the look lived in `@theme` tokens and the `src/components/ui/` components, the change was mostly in those two places: screens only lost a few one-off classes (tilts, outlines). `Card` lost its `tilt` prop rather than keeping an option the design no longer uses. The gradient isn't `background-attachment: fixed`, because mobile browsers handle that inconsistently.
