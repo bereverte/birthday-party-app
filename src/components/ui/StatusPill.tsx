@@ -12,7 +12,7 @@ export function StatusPill({ status }: { status: RealtimeStatus }) {
   return (
     <span
       role="status"
-      className="inline-flex items-center gap-1.5 rounded-full border-2 border-ink bg-paper px-2.5 py-0.5 text-xs font-bold"
+      className="inline-flex items-center gap-1.5 rounded-full bg-paper px-2.5 py-1 text-xs font-bold shadow-card"
     >
       <span className={`size-2 rounded-full ${live ? 'animate-pulse bg-mint' : 'bg-sun'}`} />
       {labels[status]}

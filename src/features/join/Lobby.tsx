@@ -30,7 +30,7 @@ export function Lobby({ me, players, online, status }: Props) {
         </div>
       </header>
 
-      <Card tone="sun" tilt="left" className="flex items-center gap-4">
+      <Card tone="sun" className="flex items-center gap-4">
         <span className="animate-wiggle text-5xl" aria-hidden>
           🎂
         </span>

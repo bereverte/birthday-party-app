@@ -38,7 +38,7 @@ export function HostLogin() {
       </header>
 
       {sentTo ? (
-        <Card tone="mint" tilt="left" className="flex flex-col gap-2 text-center">
+        <Card tone="mint" className="flex flex-col gap-2 text-center">
           <span className="text-5xl" aria-hidden>
             💌
           </span>

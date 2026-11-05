@@ -7,7 +7,7 @@ import { supabase } from '../../lib/supabase'
 export function NotHost({ email, onRecheck }: { email: string; onRecheck: () => void }) {
   return (
     <Screen className="justify-center">
-      <Card tilt="left" className="flex flex-col gap-4">
+      <Card className="flex flex-col gap-4">
         <span className="text-5xl" aria-hidden>
           🔒
         </span>

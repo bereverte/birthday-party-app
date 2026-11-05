@@ -51,7 +51,7 @@ export function JoinForm({ userId, onJoined, title = 'Entra a la festa!' }: Prop
       </header>
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-6">
-        <Card tilt="right" className="flex items-center gap-4">
+        <Card className="flex items-center gap-4">
           <EmojiAvatar key={emoji} emoji={emoji} seed={userId} size="lg" />
           <p className="min-w-0 font-display text-3xl font-extrabold break-words">
             {trimmed || <span className="text-ink-soft/50">El teu nom</span>}

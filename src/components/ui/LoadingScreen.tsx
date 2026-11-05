@@ -4,7 +4,7 @@ export function LoadingScreen({ message = 'Inflant globus…' }: { message?: str
       <span className="animate-float text-6xl" aria-hidden>
         🎈
       </span>
-      <p className="font-display text-xl font-bold">{message}</p>
+      <p className="font-display text-xl font-semibold">{message}</p>
     </main>
   )
 }

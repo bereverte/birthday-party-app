@@ -1,29 +1,23 @@
 import type { HTMLAttributes } from 'react'
 
-type Tone = 'paper' | 'pink' | 'sun' | 'mint' | 'lilac' | 'sky'
+// Tinted tones are pastel; "party" is the one loud card, for the main
+// message of a screen. Use it sparingly: one per screen.
+type Tone = 'paper' | 'pink' | 'sun' | 'mint' | 'lilac' | 'sky' | 'party'
 
 type Props = HTMLAttributes<HTMLDivElement> & {
   tone?: Tone
-  // Slight rotation for the cut-out look. Use sparingly: one per screen.
-  tilt?: 'left' | 'right'
 }
 
 const tones: Record<Tone, string> = {
-  paper: 'bg-paper',
-  pink: 'bg-pink text-white',
-  sun: 'bg-sun',
-  mint: 'bg-mint',
-  lilac: 'bg-lilac',
-  sky: 'bg-sky',
+  paper: 'bg-paper shadow-card',
+  pink: 'bg-pink-soft shadow-card',
+  sun: 'bg-sun-soft shadow-card',
+  mint: 'bg-mint-soft shadow-card',
+  lilac: 'bg-lilac-soft shadow-card',
+  sky: 'bg-sky-soft shadow-card',
+  party: 'bg-linear-120 from-pink to-coral text-white shadow-glow',
 }
 
-const tilts = { left: '-rotate-1', right: 'rotate-1' }
-
-export function Card({ tone = 'paper', tilt, className = '', ...rest }: Props) {
-  return (
-    <div
-      {...rest}
-      className={`rounded-3xl border-3 border-ink p-5 shadow-sticker ${tones[tone]} ${tilt ? tilts[tilt] : ''} ${className}`}
-    />
-  )
+export function Card({ tone = 'paper', className = '', ...rest }: Props) {
+  return <div {...rest} className={`rounded-3xl p-5 ${tones[tone]} ${className}`} />
 }

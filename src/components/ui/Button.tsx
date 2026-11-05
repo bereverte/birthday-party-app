@@ -10,18 +10,18 @@ type Props = ButtonHTMLAttributes<HTMLButtonElement> & {
 }
 
 const variants: Record<Variant, string> = {
-  primary: 'bg-pink text-white border-ink shadow-sticker',
-  secondary: 'bg-sun text-ink border-ink shadow-sticker',
-  ghost: 'bg-paper text-ink border-ink shadow-sticker-sm',
-  danger: 'bg-tomato text-white border-ink shadow-sticker-sm',
+  primary: 'bg-ink text-white shadow-lift',
+  secondary: 'bg-pink text-white shadow-glow',
+  ghost: 'bg-paper text-ink shadow-card',
+  danger: 'bg-tomato text-white shadow-card',
 }
 
 const sizes: Record<Size, string> = {
-  md: 'px-4 py-2.5 text-base',
-  lg: 'px-6 py-4 text-xl',
+  md: 'px-5 py-2.5 text-base',
+  lg: 'px-6 py-4 text-lg',
 }
 
-// Sticker button: pressing it "pushes" it into its shadow.
+// Pill button that shrinks slightly when pressed.
 export function Button({
   variant = 'primary',
   size = 'md',
@@ -36,9 +36,13 @@ export function Button({
       {...rest}
       disabled={disabled || loading}
       aria-busy={loading || undefined}
-      className={`inline-flex items-center justify-center gap-2 rounded-2xl border-3 font-display font-bold transition-[transform,box-shadow] duration-100 select-none active:translate-x-[3px] active:translate-y-[3px] active:shadow-none disabled:cursor-not-allowed disabled:opacity-60 disabled:active:translate-0 ${variants[variant]} ${sizes[size]} ${className}`}
+      className={`inline-flex items-center justify-center gap-2 rounded-full font-display font-bold transition-transform duration-100 select-none focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-pink active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-50 disabled:active:scale-100 ${variants[variant]} ${sizes[size]} ${className}`}
     >
-      {loading ? <span className="inline-block animate-spin">✳️</span> : children}
+      {loading ? (
+        <span className="inline-block size-5 animate-spin rounded-full border-2 border-current border-t-transparent" />
+      ) : (
+        children
+      )}
     </button>
   )
 }

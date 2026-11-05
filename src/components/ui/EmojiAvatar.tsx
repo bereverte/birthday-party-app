@@ -8,7 +8,7 @@ type Props = {
   online?: boolean
 }
 
-const backgrounds = ['bg-pink', 'bg-sun', 'bg-mint', 'bg-lilac', 'bg-sky', 'bg-tomato']
+const backgrounds = ['bg-pink-soft', 'bg-sun-soft', 'bg-mint-soft', 'bg-lilac-soft', 'bg-sky-soft', 'bg-coral-soft']
 
 const sizes: Record<Size, string> = {
   sm: 'size-10 text-xl',
@@ -26,13 +26,13 @@ export function EmojiAvatar({ emoji, seed, size = 'md', online }: Props) {
   return (
     <span className="relative inline-flex shrink-0">
       <span
-        className={`inline-flex items-center justify-center rounded-full border-3 border-ink shadow-sticker-sm ${backgrounds[hash(seed) % backgrounds.length]} ${sizes[size]}`}
+        className={`inline-flex items-center justify-center rounded-full border-3 border-paper shadow-card ${backgrounds[hash(seed) % backgrounds.length]} ${sizes[size]}`}
       >
         <span aria-hidden>{emoji}</span>
       </span>
       {online !== undefined && (
         <span
-          className={`absolute -right-0.5 -bottom-0.5 size-4 rounded-full border-3 border-ink ${online ? 'bg-mint' : 'bg-ink-soft/40'}`}
+          className={`absolute -right-0.5 -bottom-0.5 size-3.5 rounded-full border-2 border-paper ${online ? 'bg-mint' : 'bg-line'}`}
           title={online ? 'En línia' : 'Desconnectat'}
         />
       )}

@@ -20,7 +20,7 @@ export function PhasePlaceholder({ phase, status }: { phase: Exclude<Phase, 'lob
         <StatusPill status={status} />
       </div>
       <div className="flex flex-1 flex-col justify-center pb-16">
-        <Card tone={tone} tilt="right" className="flex flex-col items-center gap-3 py-10 text-center">
+        <Card tone={tone} className="flex flex-col items-center gap-3 py-10 text-center">
           <span className="animate-float text-7xl" aria-hidden>
             {emoji}
           </span>
