@@ -5,7 +5,7 @@
 -- Note: now() is frozen inside a transaction, so timestamps are set explicitly.
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(11);
+select plan(14);
 
 -- Users: one host (H) and three guests (A, B, C).
 insert into auth.users (id, aud, role) values
@@ -52,10 +52,12 @@ select throws_ok(
   'guest cannot answer twice'
 );
 
-select throws_ok(
-  $$ select public.close_question() $$,
-  'P0001', 'Only the host can do this',
-  'guest cannot close a question'
+select is(public.close_question(), false, 'guest closing before the time is up returns false');
+
+select is(
+  (select question_status from public.party_state),
+  'open',
+  'guest cannot close a question before the time is up'
 );
 
 -- Biel: wrong answer ------------------------------------------------------
@@ -114,6 +116,15 @@ select throws_ok(
   $$ select public.submit_answer('00000000-0000-4000-a000-000000000001', '00000000-0000-4000-b000-000000000011') $$,
   'P0001', 'This question is not open',
   'answer for a question that is not the current one is rejected'
+);
+
+-- Any guest may close an expired question (DECISIONS 030).
+select is(public.close_question(), true, 'guest can close an expired question');
+
+select is(
+  (select question_status from public.party_state),
+  'closed',
+  'expired question is closed by a guest call'
 );
 
 select * from finish();

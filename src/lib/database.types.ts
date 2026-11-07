@@ -366,7 +366,7 @@ isOneToOne: false
 { Args: { "p_act_id": string,"p_score": number }; Returns: undefined
                            },
 "close_question":
-{ Args: Record<PropertyKey, never>; Returns: undefined
+{ Args: Record<PropertyKey, never>; Returns: boolean
                            },
 "close_voting":
 { Args: { "p_act_id": string }; Returns: undefined
