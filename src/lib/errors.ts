@@ -7,6 +7,10 @@ const known: Array<[RegExp, string]> = [
   [/name must be between/i, 'El nom ha de tindre entre 1 i 30 caràcters.'],
   [/not signed in|jwt expired|auth session missing/i, 'La sessió ha caducat. Recarrega la pàgina.'],
   [/only the host/i, 'Només l’amfitriona pot fer això.'],
+  [/time is up/i, 'S’ha acabat el temps!'],
+  [/already answered/i, 'Ja has respost aquesta pregunta.'],
+  [/question is not open/i, 'Aquesta pregunta ja està tancada.'],
+  [/host cannot answer/i, 'L’amfitriona no juga el quiz 😉'],
   [/invalid email|unable to validate email/i, 'Aquest correu no sembla vàlid.'],
 ]
 

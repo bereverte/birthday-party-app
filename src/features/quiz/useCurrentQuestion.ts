@@ -22,6 +22,9 @@ export function useCurrentQuestion(party: PartyState | undefined) {
     name: 'quiz_question',
     tables: ['party_state'],
     key,
+    // Same question, new status: keep showing it while the refetch runs
+    // (no "loading" flash on close or reveal).
+    sameData: (a, b) => a.split(':')[0] === b.split(':')[0],
     fetcher: async (k): Promise<CurrentQuestion> => {
       const id = k.split(':')[0]
       const [question, options, keyRow] = await Promise.all([

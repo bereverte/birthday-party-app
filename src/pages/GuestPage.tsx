@@ -5,6 +5,7 @@ import { JoinForm } from '../features/join/JoinForm'
 import { Lobby } from '../features/join/Lobby'
 import { PhasePlaceholder } from '../features/join/PhasePlaceholder'
 import { useGuestSession } from '../features/join/useGuestSession'
+import { GuestQuiz } from '../features/quiz/GuestQuiz'
 import { usePartyState, type Phase } from '../hooks/usePartyState'
 import { usePlayers } from '../hooks/usePlayers'
 import { usePresence } from '../hooks/usePresence'
@@ -58,6 +59,9 @@ export default function GuestPage() {
   const phase = party.data.phase as Phase
   if (phase === 'lobby') {
     return <Lobby me={me} players={players.data} online={online} status={party.status} />
+  }
+  if (phase === 'quiz') {
+    return <GuestQuiz me={me} party={party.data} status={party.status} refetchParty={() => void party.refetch()} />
   }
   return <PhasePlaceholder phase={phase} status={party.status} />
 }
