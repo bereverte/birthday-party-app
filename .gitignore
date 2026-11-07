@@ -22,3 +22,6 @@ supabase/.temp/
 .idea/
 .DS_Store
 Thumbs.db
+
+# Real quiz questions and answers (loaded by hand, see README)
+supabase/quiz-content.sql
