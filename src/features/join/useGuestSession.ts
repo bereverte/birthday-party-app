@@ -22,6 +22,21 @@ export function useGuestSession() {
     setSigningIn(false)
   }, [])
 
+  // A stored session can outlive its user (deleted by hand, or a local
+  // `db reset`): the token still looks valid, but every write fails. Ask the
+  // Auth server once; if the user is gone, drop the session locally and the
+  // effect below signs in again. Network errors keep the session.
+  const verified = useRef<string | null>(null)
+  useEffect(() => {
+    if (!user || verified.current === user.id) return
+    verified.current = user.id
+    void supabase.auth.getUser().then(({ error }) => {
+      if (error && (error.code === 'user_not_found' || error.code === 'session_not_found')) {
+        void supabase.auth.signOut({ scope: 'local' })
+      }
+    })
+  }, [user])
+
   useEffect(() => {
     if (loading) return
     if (user) {
