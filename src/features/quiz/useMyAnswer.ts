@@ -2,9 +2,12 @@ import { supabase } from '../../lib/supabase'
 import { useKeyedRefetch } from './useKeyedRefetch'
 
 export type MyAnswer = {
-  optionId: string | null
+  answered: boolean
+  // The options I marked (one for single, any number for multi).
+  optionIds: string[]
+  numberValue: number | null
   // Points for this question; null until close_question has scored it
-  // (and stays null for a wrong answer: those get no ledger row).
+  // (and stays null when it scored 0: those get no ledger row).
   points: number | null
 }
 
@@ -19,7 +22,7 @@ export function useMyAnswer(questionId: string | null, playerId: string) {
       const [answer, points] = await Promise.all([
         supabase
           .from('quiz_answers')
-          .select('option_id')
+          .select('option_id, option_ids, number_value')
           .eq('question_id', id)
           .eq('player_id', playerId)
           .maybeSingle(),
@@ -33,7 +36,13 @@ export function useMyAnswer(questionId: string | null, playerId: string) {
       ])
       if (answer.error) throw answer.error
       if (points.error) throw points.error
-      return { optionId: answer.data?.option_id ?? null, points: points.data?.points ?? null }
+      const a = answer.data
+      return {
+        answered: !!a,
+        optionIds: a?.option_id ? [a.option_id] : (a?.option_ids ?? []),
+        numberValue: a?.number_value ?? null,
+        points: points.data?.points ?? null,
+      }
     },
   })
 }

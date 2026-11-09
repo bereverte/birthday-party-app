@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Button } from '../../components/ui/Button'
 import { Card } from '../../components/ui/Card'
 import { Screen } from '../../components/ui/Screen'
 import { StatusPill } from '../../components/ui/StatusPill'
@@ -8,11 +9,13 @@ import type { RealtimeStatus } from '../../hooks/useRealtimeRefetch'
 import { friendlyError } from '../../lib/errors'
 import { supabase } from '../../lib/supabase'
 import { CountdownBadge } from './CountdownBadge'
+import { NumberPicker } from './NumberPicker'
 import { optionStyle } from './optionStyles'
 import { QuizRanking } from './QuizRanking'
+import { multiFraction } from './scoring'
 import { useAutoCloseQuestion } from './useAutoCloseQuestion'
 import { useCountdown } from './useCountdown'
-import { useCurrentQuestion, type CurrentQuestion } from './useCurrentQuestion'
+import { hasKey, useCurrentQuestion, type CurrentQuestion } from './useCurrentQuestion'
 import { useMyAnswer } from './useMyAnswer'
 import { useQuizLeaderboard } from './useQuizLeaderboard'
 
@@ -23,9 +26,15 @@ type Props = {
   refetchParty: () => void
 }
 
+// What I sent, shown while the RPC is on its way (and before the refetch).
+type Sent = { questionId: string; optionIds: string[]; numberValue: number | null }
+// What I'm composing on a multi or number question, before "Confirmar".
+type Draft = { questionId: string; optionIds: string[]; numberValue: number }
+
 // The guest's quiz: waiting → question open → answered / time up → reveal
 // with points and ranking. Everything is derived from party_state and the
-// database, so closing the tab and coming back lands on the same screen.
+// database, so closing the tab and coming back lands on the same screen
+// (only an unconfirmed multi/number draft is lost).
 export function GuestQuiz({ me, party, status, refetchParty }: Props) {
   const current = useCurrentQuestion(party)
   const questionId = current.data?.question.id ?? null
@@ -36,27 +45,10 @@ export function GuestQuiz({ me, party, status, refetchParty }: Props) {
   const seconds = useCountdown(party.question_closes_at, open)
   useAutoCloseQuestion(party, refetchParty)
 
-  // Chosen option while the RPC is on its way (and before the refetch).
-  const [pending, setPending] = useState<{ questionId: string; optionId: string } | null>(null)
+  const [sent, setSent] = useState<Sent | null>(null)
+  const [draftState, setDraft] = useState<Draft | null>(null)
+  const [sending, setSending] = useState(false)
   const [error, setError] = useState<string | null>(null)
-
-  const pendingOption = pending && pending.questionId === questionId ? pending.optionId : null
-  const chosen = answer.data?.optionId ?? pendingOption
-
-  async function choose(optionId: string) {
-    if (!questionId || chosen) return
-    setPending({ questionId, optionId })
-    setError(null)
-    const { error: rpcError } = await supabase.rpc('submit_answer', {
-      p_question_id: questionId,
-      p_option_id: optionId,
-    })
-    if (rpcError) {
-      setPending(null)
-      setError(friendlyError(rpcError))
-    }
-    void answer.refetch()
-  }
 
   const header = (
     <div className="flex items-center justify-between gap-3">
@@ -83,21 +75,63 @@ export function GuestQuiz({ me, party, status, refetchParty }: Props) {
     )
   }
 
-  if (!current.data) {
+  if (!current.data || !questionId) {
     return (
       <Screen>
         {header}
         <div className="flex flex-1 items-center justify-center">
-          <p className="font-display text-xl font-semibold">{current.error ? friendlyError(current.error) : 'Carregant la pregunta…'}</p>
+          <p className="font-display text-xl font-semibold">
+            {current.error ? friendlyError(current.error) : 'Carregant la pregunta…'}
+          </p>
         </div>
       </Screen>
     )
   }
 
-  // Wait for the correct option too: right after the reveal the data may
-  // still be the pre-reveal read, and "wrong!" must never flash.
-  const revealed = party.question_status === 'revealed' && current.data.correctOptionId !== null
+  const data = current.data
+  const kind = data.question.kind
+  const mySent = sent?.questionId === questionId ? sent : null
+  const answered = !!answer.data?.answered || !!mySent
+  const myOptionIds = answer.data?.answered ? answer.data.optionIds : (mySent?.optionIds ?? [])
+  const myNumber = answer.data?.answered ? answer.data.numberValue : (mySent?.numberValue ?? null)
+  const draft = draftState?.questionId === questionId ? draftState : { questionId, optionIds: [], numberValue: 0 }
+
+  // Wait for the answer too: right after the reveal the data may still be
+  // the pre-reveal read, and "wrong!" must never flash.
+  const revealed = party.question_status === 'revealed' && hasKey(data)
   const timeUp = !open || seconds === 0
+  const locked = answered || timeUp || sending
+
+  async function send(optionIds: string[], numberValue: number | null) {
+    if (!questionId || locked) return
+    setSent({ questionId, optionIds, numberValue })
+    setSending(true)
+    setError(null)
+    const { error: rpcError } =
+      kind === 'single'
+        ? await supabase.rpc('submit_answer', { p_question_id: questionId, p_option_id: optionIds[0] })
+        : kind === 'multi'
+          ? await supabase.rpc('submit_multi_answer', { p_question_id: questionId, p_option_ids: optionIds })
+          : await supabase.rpc('submit_number_answer', { p_question_id: questionId, p_value: numberValue ?? 0 })
+    setSending(false)
+    if (rpcError) {
+      setSent(null)
+      setError(friendlyError(rpcError))
+    }
+    void answer.refetch()
+  }
+
+  function toggle(optionId: string) {
+    if (locked) return
+    if (kind === 'single') return void send([optionId], null)
+    const ids = draft.optionIds.includes(optionId)
+      ? draft.optionIds.filter((id) => id !== optionId)
+      : [...draft.optionIds, optionId]
+    setDraft({ ...draft, optionIds: ids })
+  }
+
+  // Options highlighted as "mine": what I sent, or my draft while composing.
+  const marked = answered ? myOptionIds : draft.optionIds
 
   return (
     <Screen>
@@ -105,31 +139,56 @@ export function GuestQuiz({ me, party, status, refetchParty }: Props) {
 
       <div className="flex items-start gap-3">
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-bold text-ink-soft">Pregunta {current.data.question.position}</p>
-          <h1 className="text-3xl leading-tight font-bold break-words">{current.data.question.text}</h1>
+          <p className="text-sm font-bold text-ink-soft">Pregunta {data.question.position}</p>
+          <h1 className="text-3xl leading-tight font-bold break-words">{data.question.text}</h1>
         </div>
         {open && <CountdownBadge seconds={seconds} />}
       </div>
 
-      {current.data.question.image_url && (
-        <img src={current.data.question.image_url} alt="" className="max-h-60 w-full rounded-3xl object-cover shadow-card" />
+      {data.question.image_url && (
+        <img src={data.question.image_url} alt="" className="max-h-60 w-full rounded-3xl object-cover shadow-card" />
       )}
 
-      {revealed && (
-        <RevealCard data={current.data} chosen={chosen} points={answer.data?.points ?? null} loading={!answer.data} />
+      {revealed && answer.data && (
+        <RevealCard data={data} optionIds={myOptionIds} numberValue={myNumber} points={answer.data.points} />
       )}
 
-      <Options
-        data={current.data}
-        chosen={chosen}
-        revealed={revealed}
-        disabled={!!chosen || timeUp}
-        onChoose={(id) => void choose(id)}
-      />
+      {kind === 'multi' && !answered && !timeUp && (
+        <p className="-mb-3 text-center font-bold text-lilac">☑️ Pots marcar-ne més d’una</p>
+      )}
+
+      {kind === 'number' ? (
+        <NumberPicker
+          value={answered ? (myNumber ?? 0) : draft.numberValue}
+          max={data.question.number_max ?? 10}
+          disabled={locked}
+          onChange={(n) => setDraft({ ...draft, numberValue: n })}
+        />
+      ) : (
+        <Options
+          data={data}
+          marked={marked}
+          answered={answered}
+          revealed={revealed}
+          disabled={locked}
+          onToggle={toggle}
+        />
+      )}
+
+      {kind !== 'single' && !answered && !timeUp && (
+        <Button
+          size="lg"
+          loading={sending}
+          disabled={kind === 'multi' && draft.optionIds.length === 0}
+          onClick={() => void send(draft.optionIds, draft.numberValue)}
+        >
+          Confirmar
+        </Button>
+      )}
 
       {error && <p className="text-center font-bold text-tomato">{error}</p>}
 
-      {!revealed && <StatusLine chosen={!!chosen} timeUp={timeUp} />}
+      {!revealed && <StatusLine kind={kind} answered={answered} timeUp={timeUp} />}
 
       {revealed && ranking.data && (
         <section className="flex flex-col gap-3">
@@ -143,39 +202,49 @@ export function GuestQuiz({ me, party, status, refetchParty }: Props) {
 
 function Options({
   data,
-  chosen,
+  marked,
+  answered,
   revealed,
   disabled,
-  onChoose,
+  onToggle,
 }: {
   data: CurrentQuestion
-  chosen: string | null
+  marked: string[]
+  answered: boolean
   revealed: boolean
   disabled: boolean
-  onChoose: (optionId: string) => void
+  onToggle: (optionId: string) => void
 }) {
+  const multi = data.question.kind === 'multi'
   return (
     <div className="grid grid-cols-1 gap-3">
       {data.options.map((option, i) => {
         const style = optionStyle(i)
-        const mine = option.id === chosen
-        const correct = revealed && option.id === data.correctOptionId
-        // Before the reveal: dim the options I didn't pick. After: dim the wrong ones.
-        const dimmed = revealed ? !correct : !!chosen && !mine
+        const mine = marked.includes(option.id)
+        const correct = revealed && data.correctOptionIds.includes(option.id)
+        // Before the reveal, once sent: dim what I didn't pick. After: dim the wrong ones.
+        const dimmed = revealed ? !correct : answered && !mine
+        const lifted = mine && !revealed
         return (
           <button
             key={option.id}
             type="button"
             disabled={disabled}
-            onClick={() => onChoose(option.id)}
+            onClick={() => onToggle(option.id)}
             aria-pressed={mine}
-            className={`flex min-h-16 items-center gap-3 rounded-3xl px-4 py-3 text-left text-white shadow-card transition duration-150 active:scale-[0.98] disabled:active:scale-100 ${style.bg} ${dimmed ? 'opacity-35' : ''} ${mine && !revealed ? 'scale-[1.02] shadow-lift' : ''}`}
+            className={`flex min-h-16 items-center gap-3 rounded-3xl px-4 py-3 text-left text-white shadow-card transition duration-150 active:scale-[0.98] disabled:active:scale-100 ${style.bg} ${dimmed ? 'opacity-35' : ''} ${lifted ? 'scale-[1.02] shadow-lift' : ''}`}
           >
-            <span className="inline-flex size-9 shrink-0 items-center justify-center rounded-full bg-white/25 font-display text-lg font-bold">
-              {correct ? '✓' : style.letter}
+            <span
+              className={`inline-flex size-9 shrink-0 items-center justify-center rounded-full font-display text-lg font-bold ${multi && mine && !revealed ? 'bg-white text-ink' : 'bg-white/25'}`}
+            >
+              {correct ? '✓' : multi && mine ? '✓' : style.letter}
             </span>
             <span className="min-w-0 flex-1 font-display text-xl leading-tight font-bold break-words">{option.text}</span>
-            {mine && <span className="shrink-0 rounded-full bg-white/25 px-2.5 py-1 text-xs font-bold">La teua</span>}
+            {mine && (answered || revealed) && (
+              <span className="shrink-0 rounded-full bg-white/25 px-2.5 py-1 text-xs font-bold">
+                {multi ? 'Marcada' : 'La teua'}
+              </span>
+            )}
           </button>
         )
       })}
@@ -183,45 +252,81 @@ function Options({
   )
 }
 
-function StatusLine({ chosen, timeUp }: { chosen: boolean; timeUp: boolean }) {
-  const text = chosen
+function StatusLine({ kind, answered, timeUp }: { kind: CurrentQuestion['question']['kind']; answered: boolean; timeUp: boolean }) {
+  const prompt =
+    kind === 'single'
+      ? 'Tria una resposta. Com més ràpid, més punts!'
+      : 'Confirma abans que s’acabe el temps. Com més ràpid, més punts!'
+  const text = answered
     ? timeUp
       ? 'Temps! Ara veurem si l’has encertada…'
       : 'Resposta enviada ✓ Esperant els altres…'
     : timeUp
       ? '⏰ S’ha acabat el temps!'
-      : 'Tria una resposta. Com més ràpid, més punts!'
+      : prompt
   return <p className="text-center font-bold text-ink-soft">{text}</p>
 }
 
+// The one loud card on this screen: a full score gets the party card,
+// partial credit a sunny one, nothing a plain one.
 function RevealCard({
   data,
-  chosen,
+  optionIds,
+  numberValue,
   points,
-  loading,
 }: {
   data: CurrentQuestion
-  chosen: string | null
+  optionIds: string[]
+  numberValue: number | null
   points: number | null
-  loading: boolean
 }) {
-  if (loading) return null
-  const right = chosen !== null && chosen === data.correctOptionId
+  const kind = data.question.kind
+  const answered = kind === 'number' ? numberValue !== null : optionIds.length > 0
+  const pointsText = points !== null ? `+${points} punts` : null
 
-  const { emoji, title, text } = right
-    ? { emoji: '🎉', title: 'Correcte!', text: points !== null ? `+${points} punts` : 'Sumant punts…' }
-    : chosen
-      ? { emoji: '🙈', title: 'Uf, no era aquesta', text: 'La pròxima segur que sí.' }
-      : { emoji: '⏰', title: 'No has respost', text: 'A la pròxima, més ràpid!' }
+  let result: { emoji: string; title: string; text: string | null; tone: 'party' | 'sun' | 'paper' }
 
+  if (!answered) {
+    result = { emoji: '⏰', title: 'No has respost', text: 'A la pròxima, més ràpid!', tone: 'paper' }
+  } else if (kind === 'number') {
+    const diff = Math.abs((numberValue ?? 0) - (data.correctNumber ?? 0))
+    result =
+      diff === 0
+        ? { emoji: '🎯', title: `Exacte! Era ${data.correctNumber}`, text: pointsText, tone: 'party' }
+        : diff === 1
+          ? {
+              emoji: '🤏',
+              title: `Per un pèl! Era ${data.correctNumber}`,
+              text: `Has dit ${numberValue}. ${pointsText ?? ''}`.trim(),
+              tone: 'sun',
+            }
+          : { emoji: '🙈', title: `Era ${data.correctNumber}`, text: `Has dit ${numberValue}.`, tone: 'paper' }
+  } else if (kind === 'multi') {
+    const f = multiFraction(data, optionIds)
+    result =
+      f >= 1
+        ? { emoji: '🎉', title: 'Totes bé!', text: pointsText, tone: 'party' }
+        : f > 0
+          ? { emoji: '👌', title: 'Gairebé!', text: pointsText, tone: 'sun' }
+          : { emoji: '🙈', title: 'Uf, aquesta no ha sumat', text: 'Les errades resten. La pròxima segur que sí.', tone: 'paper' }
+  } else {
+    const right = data.correctOptionIds.includes(optionIds[0])
+    result = right
+      ? { emoji: '🎉', title: 'Correcte!', text: pointsText, tone: 'party' }
+      : { emoji: '🙈', title: 'Uf, no era aquesta', text: 'La pròxima segur que sí.', tone: 'paper' }
+  }
+
+  const loud = result.tone === 'party'
   return (
-    <Card tone={right ? 'party' : 'paper'} className="flex animate-pop items-center gap-4">
+    <Card tone={result.tone} className="flex animate-pop items-center gap-4">
       <span className="text-5xl" aria-hidden>
-        {emoji}
+        {result.emoji}
       </span>
       <div>
-        <p className="font-display text-2xl leading-tight font-bold">{title}</p>
-        <p className={right ? 'text-white' : 'text-ink-soft'}>{text}</p>
+        <p className="font-display text-2xl leading-tight font-bold">{result.title}</p>
+        {result.text !== null && (
+          <p className={loud ? 'text-white' : 'text-ink-soft'}>{result.text || 'Sumant punts…'}</p>
+        )}
       </div>
     </Card>
   )
