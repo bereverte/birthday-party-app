@@ -180,7 +180,10 @@ export function HostQuiz({ party, players, refetchParty }: Props) {
 
       {/* Rescue: jump to any question (e.g. one was skipped by mistake). */}
       <details className="rounded-3xl bg-paper p-4 shadow-card">
-        <summary className="cursor-pointer font-bold">Totes les preguntes</summary>
+        <summary className="cursor-pointer font-bold">🛟 Rescat: saltar a una pregunta</summary>
+        <p className="mt-2 text-sm text-ink-soft">
+          Només si alguna cosa ha eixit malament. Qui ja ha respost una pregunta no la pot tornar a respondre.
+        </p>
         <ol className="mt-3 flex flex-col divide-y divide-line">
           {list.map((q, i) => (
             <li key={q.id} className="flex items-center gap-3 py-2">
