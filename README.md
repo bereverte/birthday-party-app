@@ -88,6 +88,8 @@ insert into public.hosts (user_id)
 select id from auth.users where email = '<host email>';
 ```
 
+Locally there's a shortcut: `npm run db:host` makes the most recent magic-link user the host. It's needed again after every `db reset`, because the reset deletes the users. Then sign out and back in on `/host`, and use fresh private windows for guests, because old sessions point at users that no longer exist.
+
 In production, run the same query from the Supabase dashboard SQL Editor.
 
 ## Loading the quiz questions

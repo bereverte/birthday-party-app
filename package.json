@@ -10,7 +10,8 @@
     "lint": "oxlint",
     "preview": "vite preview",
     "db:types": "supabase gen types typescript --local --schema public > src/lib/database.types.ts",
-    "db:test": "supabase test db"
+    "db:test": "supabase test db",
+    "db:host": "docker exec -i supabase_db_birthday-party-app psql -U postgres -c \"insert into public.hosts (user_id) select id from auth.users where not is_anonymous order by created_at desc limit 1 on conflict do nothing returning user_id\""
   },
   "dependencies": {
     "@fontsource-variable/bricolage-grotesque": "^5.3.0",
