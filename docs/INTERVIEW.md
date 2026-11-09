@@ -234,3 +234,50 @@ L'estil d'adhesius em semblava massa infantil. Abans de tocar codi vaig fer una 
 **La frase:** "He mirat cada pantalla en un navegador de veritat, no només que compilara."
 
 Vaig automatitzar Chrome a mida de mòbil: cinc convidats entrant, el formulari d'entrada, la sala d'espera i tot el flux de l'amfitriona (magic link de Mailpit, pantalla de "no ets amfitriona", panell) també a mida de portàtil. Les captures van destapar un tall al degradat de fons en pàgines llargues, que venia de `background-attachment: fixed`.
+
+## Fase 5 — El quiz
+
+### Qualsevol mòbil pot tancar la pregunta (030)
+**La frase:** "Quan s'acaba el temps, els 30 mòbils demanen tancar la pregunta, i un bloqueig a la base de dades fa que només un faça la feina."
+
+Abans només el mòbil de l'amfitriona tancava la pregunta. Si se li bloquejava la pantalla, tothom es quedava esperant. Ara, quan el compte enrere arriba a 0, tots els mòbils criden `close_question`. La funció fa `select … for update` sobre `party_state`, així que les crides es posen en cua: la primera tanca i puntua, i la resta veuen que ja està tancada i ixen de seguida. L'hora es comprova després del bloqueig, sobre la fila bloquejada.
+
+**Pregunta de seguiment:** *I si un mòbil té el rellotge avançat i la crida arriba massa d'hora?* → No és un error: la funció retorna `false` i el mòbil ho torna a provar en silenci al cap d'un segon. El compte enrere ja corregeix el desfasament amb `serverNow()`, però la base de dades sempre té l'última paraula.
+
+### Dades que depenen de la pregunta actual
+**La frase:** "Mai ensenye dades d'una pregunta que no és la que hi ha en pantalla."
+
+Els hooks del quiz depenen de la pregunta actual, i quan canvia la pregunta no sempre arriba un esdeveniment de Realtime per a cada taula. Per això vaig fer `useKeyedRefetch`, un embolcall de `useRealtimeRefetch` que torna a llegir quan canvia la clau (la pregunta) i descarta qualsevol resultat llegit per a la clau anterior. El reveal, a més, espera que arribe la resposta correcta, perquè "has fallat" no aparega ni un moment per culpa d'una lectura feta just abans del reveal.
+
+**Pregunta de seguiment:** *Per què no llegir directament el contingut de l'esdeveniment?* → Perquè el patró de tota l'app és "timbre i tornar a llegir" (DECISIONS 001, 019): l'esdeveniment només diu que alguna cosa ha canviat i la base de dades és l'única font de veritat.
+
+### Tres tipus de pregunta amb una sola fila de resposta (031)
+**La frase:** "Vaig afegir multiselecció i número sense tocar el comptador, Realtime ni el bonus de velocitat."
+
+Cada jugador continua tenint una sola fila per pregunta a `quiz_answers`, amb només una de les tres columnes plena: `option_id`, `option_ids` o `number_value`. Així continuen funcionant igual el "ja has respost", el comptador de l'amfitriona, la RLS i el temps de resposta. El número correcte va en una taula a part (`quiz_number_keys`) amb la mateixa RLS que les opcions correctes, perquè els convidats poden llegir la pregunta mentre està oberta però no la resposta. Cada tipus té una funció pròpia i xicoteta per respondre, i totes comparteixen les mateixes comprovacions.
+
+### La fórmula de la multiselecció, en tres intents (031)
+**La frase:** "La primera fórmula tenia un forat que vaig trobar fent números, i la segona no em va convéncer en jugar-la."
+
+1. `(correctes − falses) ÷ total correctes`: amb 4 correctes i 2 falses, marcar-ho tot donava el 50 %, així que marcar-ho tot compensava.
+2. `correctes ÷ total correctes − falses ÷ total falses`: marcar-ho tot ja donava sempre 0, però en jugar vaig veure que marcar una falsa d'entre 4 opcions encara donava la meitat dels punts.
+3. **La final:** si marques una falsa, 0 punts; si no, et quedes la part de correctes que hages marcat. És la més fàcil d'explicar ("si no n'estàs segura, no la marques").
+
+Amb els números va passar una cosa semblant: "a 1 de distància, la meitat" és massa generós si la resposta és 3, però no si és 57. Per això el marge (`number_tolerance`) es tria per a cada pregunta, i per defecte només val l'exacte.
+
+**Pregunta de seguiment:** *Com et vas assegurar que la fórmula fa el que dius?* → Amb un test pgTAP per a cada cas de la taula: 100 %, 75 %, 0 % si marques una falsa i 0 % si ho marques tot, a més de l'exacte, el marge i el bonus de velocitat.
+
+### Les respostes reals no van al repo
+**La frase:** "El repo és públic, així que les preguntes de veritat es carreguen a mà i el fitxer està al `.gitignore`."
+
+`supabase/quiz-content.example.sql` és una plantilla amb una llista JSON (tipus, opcions i lletres de les correctes) que es copia a `quiz-content.sql` i s'executa a l'SQL Editor. Tot va en una sola transacció i el script es nega a executar-se si algú ja ha respost, perquè no es puga esborrar un quiz a mitges la nit de la festa.
+
+### Sessions òrfenes
+**La frase:** "Una sessió guardada pot sobreviure al seu usuari, i l'app ho detecta."
+
+Després d'un `db reset` local, els navegadors dels convidats guardaven un token que semblava vàlid, però l'usuari ja no existia i entrar a la festa fallava amb un error genèric. Ara, en carregar, l'app pregunta una vegada al servidor d'Auth i, si respon `user_not_found`, descarta la sessió i n'obri una de nova. Si l'error és de xarxa, manté la sessió.
+
+### Com ho he provat
+**La frase:** "La puntuació la proven els tests, i el flux l'he jugat amb diversos navegadors alhora."
+
+62 tests pgTAP, entre ells el tancament per part d'un convidat, les crides alhora, cada cas de puntuació i la resposta amagada fins al reveal. També un script de Node que simula dos convidats contra la Supabase local (responen, intenten tancar massa d'hora i tanquen alhora) i, finalment, partides de prova amb l'amfitriona a Chrome i convidats a Firefox i Edge.

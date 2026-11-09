@@ -32,13 +32,15 @@ React + TypeScript + Tailwind (Vite), Supabase (Postgres + Realtime + Auth), dep
 - Phase 3 (done): shared realtime infrastructure, guest join + lobby, host login + minimal panel, design system.
 - Phase 4 (done): deploy. Production: https://birthday-party-app-brown.vercel.app (Vercel auto-deploys `main`). Cloud Supabase project ref `aljqfmjoapqmogvbwsne`, schema from migrations, no seed. See README "Deploy".
 - Phase 4.5 (done): visual redesign to the "soft" look (DECISIONS 029).
-- Next: quiz, then challenges, show, leaderboards.
+- Phase 5 (done): quiz with single, multi-select and number questions (DECISIONS 030–031). Real questions are loaded by hand with `supabase/quiz-content.example.sql` (README).
+- Next: challenges, then show, leaderboards.
 - Extra if time allows: avatar builder (e.g. DiceBear) to replace the emoji picker.
 
 ## Reuse before writing new code
 
 - `useRealtimeRefetch` (`src/hooks/`): the only way to read live data. Pass `name`, `tables` and a `fetcher`. It refetches on events, on (re)subscribe, when the tab becomes visible, on `online` and on host resync. Don't read event payloads.
 - `usePartyState`, `usePlayers`, `usePresence`, `useSession` (`src/hooks/`).
+- `useKeyedRefetch` (`src/features/quiz/`): `useRealtimeRefetch` for data that depends on a prop (e.g. the current question). It refetches when the key changes and hides results for an old key.
 - `src/lib/partyChannel.ts`: the single shared `party` channel for Presence and the `resync` Broadcast. Don't create other channels with a shared topic.
 - `src/lib/serverClock.ts`: `serverNow()` / `parseServerTime()` for countdowns (display only).
 - `src/lib/errors.ts`: `friendlyError()` turns errors into Catalan UI messages.
@@ -53,6 +55,7 @@ React + TypeScript + Tailwind (Vite), Supabase (Postgres + Realtime + Auth), dep
 - After a migration: `npx supabase db reset`, `npm run db:types`, `npm run db:test`. Add pgTAP tests for new database rules. To ship it: `npx supabase db push --remote --dry-run`, then without `--dry-run` (without `--remote` it targets local).
 - Never `supabase config push`: `config.toml` has localhost URLs and would break production Auth. Cloud Auth settings are set by hand (DECISIONS 026).
 - When running the Supabase CLI from the Bash tool, append `< /dev/null` or it hangs.
+- After a local `db reset`: sign out and back in on `/host`, then run `npm run db:host` (the reset deletes the users).
 - Phone testing: `npm run dev:mobile` with `.env.mobile.local` (README). The magic link doesn't work from a phone locally.
 
 ## How to work
