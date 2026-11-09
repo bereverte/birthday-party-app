@@ -25,3 +25,6 @@ Thumbs.db
 
 # Real quiz questions and answers (loaded by hand, see README)
 supabase/quiz-content.sql
+
+# Supabase Studio saved queries (local, may contain personal data)
+supabase/snippets/

@@ -113,14 +113,14 @@ isOneToOne: false
                   ]
                 },"quiz_answers": {
                   Row: {
-                    "answered_at": string,"option_id": string,"player_id": string,"question_id": string
+                    "answered_at": string,"number_value": number | null,"option_id": string | null,"option_ids": (string)[] | null,"player_id": string,"question_id": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "answered_at"?: string,"option_id": string,"player_id": string,"question_id": string
+                    "answered_at"?: string,"number_value"?: number | null,"option_id"?: string | null,"option_ids"?: (string)[] | null,"player_id": string,"question_id": string
                   }
                   Update: {
-                    "answered_at"?: string,"option_id"?: string,"player_id"?: string,"question_id"?: string
+                    "answered_at"?: string,"number_value"?: number | null,"option_id"?: string | null,"option_ids"?: (string)[] | null,"player_id"?: string,"question_id"?: string
                   }
                   Relationships: [
                     {
@@ -176,6 +176,26 @@ isOneToOne: false
     },{
       foreignKeyName: "quiz_keys_question_id_fkey"
       columns: ["question_id"]
+isOneToOne: false
+      referencedRelation: "quiz_questions"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"quiz_number_keys": {
+                  Row: {
+                    "question_id": string,"value": number
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "question_id": string,"value": number
+                  }
+                  Update: {
+                    "question_id"?: string,"value"?: number
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "quiz_number_keys_question_id_fkey"
+      columns: ["question_id"]
 isOneToOne: true
       referencedRelation: "quiz_questions"
       referencedColumns: ["id"]
@@ -203,14 +223,14 @@ isOneToOne: false
                   ]
                 },"quiz_questions": {
                   Row: {
-                    "id": string,"image_url": string | null,"position": number,"text": string,"time_limit_s": number
+                    "id": string,"image_url": string | null,"kind": string,"number_max": number | null,"position": number,"text": string,"time_limit_s": number
                   }
                   ComputedFields: never
                   Insert: {
-                    "id"?: string,"image_url"?: string | null,"position": number,"text": string,"time_limit_s"?: number
+                    "id"?: string,"image_url"?: string | null,"kind"?: string,"number_max"?: number | null,"position": number,"text": string,"time_limit_s"?: number
                   }
                   Update: {
-                    "id"?: string,"image_url"?: string | null,"position"?: number,"text"?: string,"time_limit_s"?: number
+                    "id"?: string,"image_url"?: string | null,"kind"?: string,"number_max"?: number | null,"position"?: number,"text"?: string,"time_limit_s"?: number
                   }
                   Relationships: [
                     
@@ -359,7 +379,23 @@ isOneToOne: false
                 }
           }
           Functions: {
-            "award_challenge_points":
+            "assert_can_answer":
+{ Args: { "p_kind": string,"p_question_id": string }; Returns: {
+              "id": string,
+"image_url": string | null,
+"kind": string,
+"number_max": number | null,
+"position": number,
+"text": string,
+"time_limit_s": number
+            }
+                          SetofOptions: {
+        from: "*"
+        to: "quiz_questions"
+        isOneToOne: true
+        isSetofReturn: false
+      } },
+"award_challenge_points":
 { Args: { "p_challenge_id": string,"p_player_ids": (string)[],"p_points": number }; Returns: number
                            },
 "cast_vote":
@@ -404,6 +440,12 @@ isOneToOne: false
                            },
 "submit_answer":
 { Args: { "p_option_id": string,"p_question_id": string }; Returns: undefined
+                           },
+"submit_multi_answer":
+{ Args: { "p_option_ids": (string)[],"p_question_id": string }; Returns: undefined
+                           },
+"submit_number_answer":
+{ Args: { "p_question_id": string,"p_value": number }; Returns: undefined
                            }
           }
           Enums: {

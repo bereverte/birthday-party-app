@@ -41,7 +41,7 @@ update public.party_state set phase = 'finished';
 select set_config('request.jwt.claims', '{"sub": "11111111-1111-4111-8111-111111111111", "role": "authenticated"}', true);
 
 select is((select phase from public.party_state), 'lobby', 'guest cannot change the party phase');
-select is((select count(*)::int from public.quiz_keys), 3, 'host sees all answers');
+select is((select count(*)::int from public.quiz_keys), 5, 'host sees all answers (seed: 3 single + 2 multi)');
 
 select throws_ok(
   $$ update public.party_state set question_status = 'revealed' $$,

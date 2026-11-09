@@ -26,6 +26,24 @@ insert into public.quiz_keys (question_id, correct_option_id) values
   ('00000000-0000-4000-a000-000000000002', '00000000-0000-4000-b000-000000000024'),
   ('00000000-0000-4000-a000-000000000003', '00000000-0000-4000-b000-000000000032');
 
+-- One question of each newer kind (DECISIONS 031).
+insert into public.quiz_questions (id, position, text, kind, number_max, time_limit_s) values
+  ('00000000-0000-4000-a000-000000000004', 4, 'Quins instruments ha tocat?', 'multi', null, 25),
+  ('00000000-0000-4000-a000-000000000005', 5, 'Quants tatuatges s''ha fet ella mateixa?', 'number', 10, 20);
+
+insert into public.quiz_options (id, question_id, position, text) values
+  ('00000000-0000-4000-b000-000000000041', '00000000-0000-4000-a000-000000000004', 1, 'Piano'),
+  ('00000000-0000-4000-b000-000000000042', '00000000-0000-4000-a000-000000000004', 2, 'Guitarra'),
+  ('00000000-0000-4000-b000-000000000043', '00000000-0000-4000-a000-000000000004', 3, 'Saxo'),
+  ('00000000-0000-4000-b000-000000000044', '00000000-0000-4000-a000-000000000004', 4, 'Bateria');
+
+insert into public.quiz_keys (question_id, correct_option_id) values
+  ('00000000-0000-4000-a000-000000000004', '00000000-0000-4000-b000-000000000041'),
+  ('00000000-0000-4000-a000-000000000004', '00000000-0000-4000-b000-000000000042');
+
+insert into public.quiz_number_keys (question_id, value) values
+  ('00000000-0000-4000-a000-000000000005', 3);
+
 insert into public.challenges (id, position, name, emoji, description) values
   ('00000000-0000-4000-c000-000000000001', 1, 'Saltar a corda', '🪢',
    'Qui fa més salts seguits sense ensopegar.'),
