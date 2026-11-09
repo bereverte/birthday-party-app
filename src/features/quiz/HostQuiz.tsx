@@ -101,14 +101,27 @@ export function HostQuiz({ party, players, refetchParty }: Props) {
 
         {current && (
           <>
+            {current.kind !== 'single' && (
+              <p className="-mb-3 text-sm font-bold text-lilac">
+                {current.kind === 'multi'
+                  ? '☑️ Pots marcar-ne més d’una'
+                  : `🔢 Tria un número del 0 al ${current.number_max}`}
+              </p>
+            )}
             <p className="font-display text-3xl leading-tight font-bold break-words">{current.text}</p>
             {current.image_url && (
               <img src={current.image_url} alt="" className="max-h-72 w-full rounded-3xl object-cover shadow-card" />
             )}
+            {current.kind === 'number' && status === 'revealed' && (
+              <div className="flex animate-pop flex-col items-center gap-1 rounded-3xl bg-mint-soft py-5 shadow-card">
+                <p className="font-bold text-ink-soft">La resposta era</p>
+                <p className="font-display text-7xl leading-none font-bold tabular-nums">{current.correctNumber}</p>
+              </div>
+            )}
             <div className="grid gap-3 sm:grid-cols-2">
               {current.options.map((option, i) => {
                 const style = optionStyle(i)
-                const correct = status === 'revealed' && option.id === current.correctOptionId
+                const correct = status === 'revealed' && current.correctOptionIds.includes(option.id)
                 const dimmed = status === 'revealed' && !correct
                 return (
                   <div
