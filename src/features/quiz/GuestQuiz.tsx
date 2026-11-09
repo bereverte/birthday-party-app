@@ -290,10 +290,11 @@ function RevealCard({
     result = { emoji: '⏰', title: 'No has respost', text: 'A la pròxima, més ràpid!', tone: 'paper' }
   } else if (kind === 'number') {
     const diff = Math.abs((numberValue ?? 0) - (data.correctNumber ?? 0))
+    const close = diff > 0 && diff <= data.question.number_tolerance
     result =
       diff === 0
         ? { emoji: '🎯', title: `Exacte! Era ${data.correctNumber}`, text: pointsText, tone: 'party' }
-        : diff === 1
+        : close
           ? {
               emoji: '🤏',
               title: `Per un pèl! Era ${data.correctNumber}`,
@@ -308,7 +309,7 @@ function RevealCard({
         ? { emoji: '🎉', title: 'Totes bé!', text: pointsText, tone: 'party' }
         : f > 0
           ? { emoji: '👌', title: 'Gairebé!', text: pointsText, tone: 'sun' }
-          : { emoji: '🙈', title: 'Uf, aquesta no ha sumat', text: 'Les errades resten. La pròxima segur que sí.', tone: 'paper' }
+          : { emoji: '🙈', title: 'Uf, aquesta no ha sumat', text: 'Si marques una falsa, no puntua.', tone: 'paper' }
   } else {
     const right = data.correctOptionIds.includes(optionIds[0])
     result = right

@@ -223,14 +223,14 @@ isOneToOne: false
                   ]
                 },"quiz_questions": {
                   Row: {
-                    "id": string,"image_url": string | null,"kind": string,"number_max": number | null,"position": number,"text": string,"time_limit_s": number
+                    "id": string,"image_url": string | null,"kind": string,"number_max": number | null,"number_tolerance": number,"position": number,"text": string,"time_limit_s": number
                   }
                   ComputedFields: never
                   Insert: {
-                    "id"?: string,"image_url"?: string | null,"kind"?: string,"number_max"?: number | null,"position": number,"text": string,"time_limit_s"?: number
+                    "id"?: string,"image_url"?: string | null,"kind"?: string,"number_max"?: number | null,"number_tolerance"?: number,"position": number,"text": string,"time_limit_s"?: number
                   }
                   Update: {
-                    "id"?: string,"image_url"?: string | null,"kind"?: string,"number_max"?: number | null,"position"?: number,"text"?: string,"time_limit_s"?: number
+                    "id"?: string,"image_url"?: string | null,"kind"?: string,"number_max"?: number | null,"number_tolerance"?: number,"position"?: number,"text"?: string,"time_limit_s"?: number
                   }
                   Relationships: [
                     
@@ -385,6 +385,7 @@ isOneToOne: false
 "image_url": string | null,
 "kind": string,
 "number_max": number | null,
+"number_tolerance": number,
 "position": number,
 "text": string,
 "time_limit_s": number

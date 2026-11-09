@@ -12,6 +12,10 @@ alter table public.quiz_questions
   add column kind text not null default 'single'
     check (kind in ('single', 'multi', 'number')),
   add column number_max int check (number_max between 1 and 100),
+  -- Number questions: answers this close (but not exact) get half points.
+  -- 0 = only the exact answer scores. Off by one means a lot when the
+  -- answer is 3, little when it's 57, so it's chosen per question.
+  add column number_tolerance int not null default 0 check (number_tolerance between 0 and 100),
   -- The counter's maximum exists exactly for number questions.
   add constraint quiz_questions_number_max_kind_check
     check ((kind = 'number') = (number_max is not null));
@@ -202,10 +206,10 @@ $$;
 -- ---------------------------------------------------------------------------
 -- Scoring. Every answer gets a fraction f between 0 and 1:
 --   single: 1 if it's the correct option, else 0.
---   multi:  marked correct / all correct − marked wrong / all wrong, min 0.
---           Marking everything is always 1 − 1 = 0, whatever the mix; with
---           no wrong options the second part is 0.
---   number: exact 1, off by one 0.5, else 0.
+--   multi:  0 if any wrong option is marked; otherwise
+--           marked correct / all correct. Marking everything always scores
+--           0, and "not sure? don't mark it" is easy to explain.
+--   number: exact 1; within number_tolerance (when > 0) 0.5; else 0.
 -- points = round(f * (quiz_correct_points + quiz_max_speed_bonus * speed)),
 -- speed = 1 − elapsed / time_limit on server timestamps (0..1). Only f > 0
 -- gets a ledger row. Rest as in 20261107120000 (lock, expiry, idempotency).
@@ -255,23 +259,24 @@ begin
             where k.question_id = a.question_id and k.correct_option_id = a.option_id
           ) then 1.0 else 0.0 end
         when 'multi' then (
-          select greatest(0,
-            coalesce(
+          select case
+            when bool_or(o.id = any (a.option_ids) and k.correct_option_id is null) then 0.0
+            else coalesce(
               count(*) filter (where o.id = any (a.option_ids) and k.correct_option_id is not null)::numeric
                 / nullif(count(k.correct_option_id), 0),
               0)
-            - coalesce(
-              count(*) filter (where o.id = any (a.option_ids) and k.correct_option_id is null)::numeric
-                / nullif(count(*) filter (where k.correct_option_id is null), 0),
-              0)
-          )
+          end
           from public.quiz_options o
           left join public.quiz_keys k
             on k.question_id = o.question_id and k.correct_option_id = o.id
           where o.question_id = a.question_id
         )
         when 'number' then (
-          select case abs(a.number_value - nk.value) when 0 then 1.0 when 1 then 0.5 else 0.0 end
+          select case
+            when a.number_value = nk.value then 1.0
+            when abs(a.number_value - nk.value) <= q.number_tolerance then 0.5
+            else 0.0
+          end
           from public.quiz_number_keys nk
           where nk.question_id = a.question_id
         )

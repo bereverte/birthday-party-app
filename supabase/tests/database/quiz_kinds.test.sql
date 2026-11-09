@@ -1,12 +1,13 @@
 -- Multi-select and number questions (DECISIONS 031): answer validation,
--- the proportional multi score, the off-by-one number score, the speed
+-- the multi score (any wrong mark = 0, else the share of correct ones), the
+-- number score (exact, or half within the question's tolerance), the speed
 -- bonus on the new kinds and the hidden number key.
 -- Scores below use quiz_correct_points = 500 and quiz_max_speed_bonus = 500
 -- (scoring_config from the schema migration). now() is frozen inside the
 -- transaction, so every answer has answered_at = now().
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(20);
+select plan(23);
 
 -- Users: host H and guests A–F.
 insert into auth.users (id, aud, role) values
@@ -73,7 +74,7 @@ select throws_ok(
   'multi: guest cannot answer twice'
 );
 
--- Biel: 3 correct (one repeated, counted once) → 3/4 = 75 %.
+-- Biel: 3 of 4 correct (one repeated, counted once), no wrong → 75 %.
 select set_config('request.jwt.claims', '{"sub": "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb", "role": "authenticated"}', true);
 select lives_ok(
   $$ select public.submit_multi_answer('00000000-0000-4000-a000-000000000101', array[
@@ -82,7 +83,7 @@ select lives_ok(
   'multi: guest marks 3 correct options'
 );
 
--- Carla: 4 correct + 1 wrong → 4/4 − 1/2 = 50 %.
+-- Carla: 4 correct + 1 wrong → any wrong mark scores 0.
 select set_config('request.jwt.claims', '{"sub": "cccccccc-cccc-4ccc-8ccc-cccccccccccc", "role": "authenticated"}', true);
 select lives_ok(
   $$ select public.submit_multi_answer('00000000-0000-4000-a000-000000000101', array[
@@ -92,7 +93,7 @@ select lives_ok(
   'multi: guest marks 4 correct and 1 wrong'
 );
 
--- Dani: all 6 → 4/4 − 2/2 = 0 %, no ledger row.
+-- Dani: all 6 → 0, no ledger row.
 select set_config('request.jwt.claims', '{"sub": "dddddddd-dddd-4ddd-8ddd-dddddddddddd", "role": "authenticated"}', true);
 select lives_ok(
   $$ select public.submit_multi_answer('00000000-0000-4000-a000-000000000101', array[
@@ -127,15 +128,14 @@ select results_eq(
   $$ select player_id, points from public.points_ledger
      where source_id = '00000000-0000-4000-a000-000000000101' order by points desc $$,
   $$ values ('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'::uuid, 500),
-            ('bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb'::uuid, 375),
-            ('cccccccc-cccc-4ccc-8ccc-cccccccccccc'::uuid, 250) $$,
-  'multi: 100 % / 75 % / 50 %, and marking everything scores nothing'
+            ('bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb'::uuid, 375) $$,
+  'multi: all correct 100 %, 3 of 4 75 %, any wrong mark or everything 0'
 );
 
--- Number: max 10, answer 3.
+-- Number: max 10, answer 3, tolerance 1 (2 and 4 get half).
 reset role;
-insert into public.quiz_questions (id, position, text, kind, number_max, time_limit_s) values
-  ('00000000-0000-4000-a000-000000000102', 102, 'Quants tatuatges s''ha fet ella mateixa?', 'number', 10, 20);
+insert into public.quiz_questions (id, position, text, kind, number_max, number_tolerance, time_limit_s) values
+  ('00000000-0000-4000-a000-000000000102', 102, 'Quants tatuatges s''ha fet ella mateixa?', 'number', 10, 1, 20);
 insert into public.quiz_number_keys (question_id, value) values
   ('00000000-0000-4000-a000-000000000102', 3);
 
@@ -189,7 +189,7 @@ select results_eq(
   $$ values ('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'::uuid, 750),
             ('bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb'::uuid, 375),
             ('cccccccc-cccc-4ccc-8ccc-cccccccccccc'::uuid, 375) $$,
-  'number: exact 100 %, off by one 50 %, further 0, with the speed bonus'
+  'number: exact 100 %, within tolerance 50 %, further 0, with the speed bonus'
 );
 
 select public.reveal_question();
@@ -199,6 +199,34 @@ select results_eq(
   $$ select value from public.quiz_number_keys $$,
   $$ values (3) $$,
   'number: guest sees the answer after the reveal'
+);
+
+-- Number with the default tolerance 0: only the exact answer scores.
+reset role;
+insert into public.quiz_questions (id, position, text, kind, number_max, time_limit_s) values
+  ('00000000-0000-4000-a000-000000000103', 103, 'Quants germans té?', 'number', 10, 20);
+insert into public.quiz_number_keys (question_id, value) values
+  ('00000000-0000-4000-a000-000000000103', 3);
+update public.party_state set
+  current_question_id = '00000000-0000-4000-a000-000000000103',
+  question_status = 'open',
+  question_opened_at = now() - interval '20 seconds',
+  question_closes_at = now() + interval '1 second';
+set local role authenticated;
+
+select set_config('request.jwt.claims', '{"sub": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", "role": "authenticated"}', true);
+select lives_ok($$ select public.submit_number_answer('00000000-0000-4000-a000-000000000103', 3) $$, 'number, no tolerance: exact answer');
+select set_config('request.jwt.claims', '{"sub": "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb", "role": "authenticated"}', true);
+select lives_ok($$ select public.submit_number_answer('00000000-0000-4000-a000-000000000103', 4) $$, 'number, no tolerance: off by one');
+
+select set_config('request.jwt.claims', '{"sub": "11111111-1111-4111-8111-111111111111", "role": "authenticated"}', true);
+select public.close_question();
+
+select results_eq(
+  $$ select player_id, points from public.points_ledger
+     where source_id = '00000000-0000-4000-a000-000000000103' $$,
+  $$ values ('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'::uuid, 500) $$,
+  'number, no tolerance: only the exact answer scores'
 );
 
 select * from finish();

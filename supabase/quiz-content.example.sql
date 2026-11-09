@@ -9,10 +9,12 @@
 -- and "image" (URL). Then, by "type" (default "single"):
 --   single: "options" (2–6) and "correct": one letter ("A", "B"…).
 --   multi:  "options" (2–6) and "correct": a list of letters (["A", "C"]).
---           Use at least 2 wrong options: with only one, picking it costs
---           all the points (DECISIONS 031).
---   number: "max" (1–100, keep it ≤ 10 for the − / + buttons) and
---           "answer" (0–max). No options.
+--           Any wrong mark scores 0; otherwise the share of correct ones
+--           marked (DECISIONS 031).
+--   number: "max" (1–100, keep it ≤ 10 for the − / + buttons), "answer"
+--           (0–max) and optionally "close": answers within that distance
+--           get half points (default 0: only the exact answer scores).
+--           No options.
 
 do $$
 declare
@@ -61,6 +63,13 @@ begin
     "text": "Quants tatuatges s'ha fet ella mateixa?",
     "max": 10,
     "answer": 3
+  },
+  {
+    "type": "number",
+    "text": "Quants km va córrer a la primera marató?",
+    "max": 60,
+    "answer": 42,
+    "close": 2
   }
 ]
 $json$::jsonb) loop
@@ -73,8 +82,9 @@ $json$::jsonb) loop
         raise exception 'Question %: a number question needs "max" and an "answer" between 0 and max', v_pos;
       end if;
 
-      insert into public.quiz_questions (position, text, kind, number_max, time_limit_s, image_url)
-      values (v_pos, q->>'text', 'number', (q->>'max')::int, coalesce((q->>'time')::int, 20), q->>'image')
+      insert into public.quiz_questions (position, text, kind, number_max, number_tolerance, time_limit_s, image_url)
+      values (v_pos, q->>'text', 'number', (q->>'max')::int, coalesce((q->>'close')::int, 0),
+              coalesce((q->>'time')::int, 20), q->>'image')
       returning id into v_qid;
 
       insert into public.quiz_number_keys (question_id, value) values (v_qid, (q->>'answer')::int);
@@ -101,9 +111,6 @@ $json$::jsonb) loop
        or exists (select 1 from unnest(v_right) r where r not between 0 and v_count - 1)
        or (v_kind = 'single' and cardinality(v_right) <> 1) then
       raise exception 'Question %: "correct" must be valid letters (exactly one for single)', v_pos;
-    end if;
-    if v_kind = 'multi' and v_count - cardinality(v_right) < 2 then
-      raise notice 'Question %: fewer than 2 wrong options, picking the wrong one costs everything', v_pos;
     end if;
 
     insert into public.quiz_questions (position, text, kind, time_limit_s, image_url)

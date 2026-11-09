@@ -99,8 +99,8 @@ Locally, `seed.sql` loads three sample questions. Production has no seed, so the
 1. Copy `supabase/quiz-content.example.sql` to `supabase/quiz-content.sql`. That file is git-ignored: the repo is public and must not contain the real answers.
 2. Write the questions in the JSON list. Every question has `text`, and optionally `time` (seconds, default 20) and `image` (a URL). The rest depends on `type`:
    - `single` (default): `options` (2 to 6) and `correct`, one letter (`"A"`).
-   - `multi`: `options` and `correct`, a list of letters (`["A", "C"]`). Use at least two wrong options.
-   - `number`: `max` (10 or less works best with the − / + buttons) and `answer`.
+   - `multi`: `options` and `correct`, a list of letters (`["A", "C"]`). Any wrong mark scores 0.
+   - `number`: `max` (10 or less works best with the − / + buttons), `answer`, and optionally `close`: answers that far off or closer get half points (default 0, exact only).
 3. Paste the whole file into the Supabase dashboard → SQL Editor and run it. It replaces every question and prints `Loaded N questions`.
 
 The script refuses to run once anyone has answered, so it can't wipe a quiz in progress. Load the questions before the party, and test them with a run-through. After a test run, delete the test players' answers and points first.
