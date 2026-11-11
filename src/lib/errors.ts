@@ -25,6 +25,18 @@ const known: Array<[RegExp, string]> = [
   [/challenges_name_length/i, 'El nom de la prova ha de tindre entre 1 i 40 caràcters.'],
   [/challenges_description_length/i, 'La descripció pot tindre com a molt 200 caràcters.'],
   [/challenges_emoji_length/i, 'Posa un sol emoji.'],
+  [/not in the show phase/i, 'Primer posa la fase del show.'],
+  [/act not found/i, 'Aquesta actuació ja no existeix.'],
+  [/close the voting first/i, 'Primer tanca la votació que està oberta.'],
+  [/no act is performing/i, 'Primer comença una actuació.'],
+  [/voting is not open/i, 'La votació d’aquesta actuació no està oberta.'],
+  [/cannot vote for your own act/i, 'No pots votar la teua actuació 🙈'],
+  [/only its creator/i, 'Només qui l’ha apuntada la pot retirar.'],
+  [/already been on stage/i, 'Aquesta actuació ja ha passat per l’escenari.'],
+  [/title must be between/i, 'El títol ha de tindre entre 1 i 60 caràcters.'],
+  [/join the party first/i, 'Primer has d’entrar a la festa.'],
+  [/unknown player/i, 'Algun dels companys ja no està a la festa.'],
+  [/show_acts_one_on_stage/i, 'Ja hi ha una actuació a l’escenari.'],
   [/invalid email|unable to validate email/i, 'Aquest correu no sembla vàlid.'],
 ]
 
