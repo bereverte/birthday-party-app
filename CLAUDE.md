@@ -33,7 +33,8 @@ React + TypeScript + Tailwind (Vite), Supabase (Postgres + Realtime + Auth), dep
 - Phase 4 (done): deploy. Production: https://birthday-party-app-brown.vercel.app (Vercel auto-deploys `main`). Cloud Supabase project ref `aljqfmjoapqmogvbwsne`, schema from migrations, no seed. See README "Deploy".
 - Phase 4.5 (done): visual redesign to the "soft" look (DECISIONS 029).
 - Phase 5 (done): quiz with single, multi-select and number questions (DECISIONS 030–031). Real questions are loaded by hand with `supabase/quiz-content.example.sql` (README).
-- Phase 6 (done): challenges, created from /host, one active at a time, select players + preset points (DECISIONS 033).
+- Phase 6 (done, deployed): challenges, created from /host, one active at a time, select players + preset points (DECISIONS 033).
+- Before the party: clean production test data (quiz answers, points, test players, anonymous auth users) and reset `party_state` to lobby. Keep the quiz questions, the `hosts` row and the host's player.
 - Next: show, then leaderboards.
 - Extra if time allows: avatar builder (e.g. DiceBear) to replace the emoji picker.
 
@@ -56,6 +57,7 @@ React + TypeScript + Tailwind (Vite), Supabase (Postgres + Realtime + Auth), dep
 - After a migration: `npx supabase db reset`, `npm run db:types`, `npm run db:test`. Add pgTAP tests for new database rules. To ship it: `npx supabase db push --remote --dry-run`, then without `--dry-run` (without `--remote` it targets local).
 - Never `supabase config push`: `config.toml` has localhost URLs and would break production Auth. Cloud Auth settings are set by hand (DECISIONS 026).
 - When running the Supabase CLI from the Bash tool, append `< /dev/null` or it hangs.
+- `supabase db query --remote`: pass multi-line SQL with `-f <file>` (an inline multi-line argument only runs its first line) and use `--read-only` for reads. Writes to production (`db push`, `db query`) need `--yes`, and only after the developer has said yes.
 - After a local `db reset`: sign out and back in on `/host`, then run `npm run db:host` (the reset deletes the users).
 - Phone testing: `npm run dev:mobile` with `.env.mobile.local` (README). The magic link doesn't work from a phone locally.
 

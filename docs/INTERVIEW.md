@@ -307,6 +307,8 @@ L'amfitriona selecciona qui ha guanyat (una persona o tot l'equip) i toca 🥇 1
 Vaig moure el rànquing del quiz a `features/leaderboard/` i el vaig fer genèric. El de la festa llegeix la vista `party_leaderboard` (proves + show, amfitriona inclosa) i el del quiz `quiz_leaderboard`. Els dos escolten `points_ledger`, amb el mateix patró de "timbre i tornar a llegir".
 
 ### Com ho he provat
-**La frase:** "Les regles noves de la base de dades tenen un test cadascuna."
+**La frase:** "Les regles noves de la base de dades tenen un test cadascuna, i el flux l'he jugat amb l'ordinador i el mòbil alhora."
 
-15 tests pgTAP nous (91 en total): només l'amfitriona comença o acaba proves, només en la fase de proves, només una activa, l'esborrat bloquejat amb punts i permès sense, i les longituds.
+15 tests pgTAP nous (91 en total): només l'amfitriona comença o acaba proves, només en la fase de proves, només una activa, l'esborrat bloquejat amb punts i permès sense, i les longituds. Després vaig jugar el flux sencer en local, amb l'amfitriona a l'ordinador i un convidat al mòbil per la wifi: començar una prova, puntuar, corregir, treure punts i acabar-la.
+
+**Pregunta de seguiment:** *Per què l'amfitriona a l'ordinador i no al mòbil?* → En local, l'enllaç del magic link apunta a `127.0.0.1`, que al mòbil és el mateix mòbil. Els convidats entren de manera anònima, sense correu, i funcionen bé al mòbil. El login de l'amfitriona des del mòbil es prova a producció, on l'enllaç va a l'adreça de Vercel.
