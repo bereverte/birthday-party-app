@@ -4,7 +4,9 @@ import { supabase } from '../../lib/supabase'
 import { useKeyedRefetch } from './useKeyedRefetch'
 
 export type QuizOption = Tables<'quiz_options'>
-export type QuestionKind = 'single' | 'multi' | 'number'
+export type QuestionKind = 'single' | 'multi' | 'number' | 'text'
+// An accepted written answer: credit 1 = full points, 0.5 = half.
+export type TextKey = { answer: string; credit: number }
 export type CurrentQuestion = {
   question: Tables<'quiz_questions'> & { kind: QuestionKind }
   options: QuizOption[]
@@ -12,12 +14,28 @@ export type CurrentQuestion = {
   // set for the host. Several ids for a multi question.
   correctOptionIds: string[]
   correctNumber: number | null
+  // Ordered by position: the first full-credit one is "the" answer.
+  textKeys: TextKey[]
+  // A picture shown only at the reveal (DECISIONS 032).
+  revealImageUrl: string | null
 }
 
 // True once the answer has arrived: the reveal screen waits for it, so it
 // never shows "wrong!" from a read made just before the reveal.
 export function hasKey(data: CurrentQuestion) {
-  return data.question.kind === 'number' ? data.correctNumber !== null : data.correctOptionIds.length > 0
+  switch (data.question.kind) {
+    case 'number':
+      return data.correctNumber !== null
+    case 'text':
+      return data.textKeys.length > 0
+    default:
+      return data.correctOptionIds.length > 0
+  }
+}
+
+// The answer to show at the reveal of a text question.
+export function mainTextAnswer(keys: TextKey[]) {
+  return (keys.find((k) => k.credit >= 1) ?? keys[0])?.answer ?? ''
 }
 
 // The question on screen. Its content only changes through party_state
@@ -36,21 +54,27 @@ export function useCurrentQuestion(party: PartyState | undefined) {
     sameData: (a, b) => a.split(':')[0] === b.split(':')[0],
     fetcher: async (k): Promise<CurrentQuestion> => {
       const id = k.split(':')[0]
-      const [question, options, keys, numberKey] = await Promise.all([
+      const [question, options, keys, numberKey, textKeys, revealImage] = await Promise.all([
         supabase.from('quiz_questions').select('*').eq('id', id).single(),
         supabase.from('quiz_options').select('*').eq('question_id', id).order('position'),
         supabase.from('quiz_keys').select('correct_option_id').eq('question_id', id),
         supabase.from('quiz_number_keys').select('value').eq('question_id', id).maybeSingle(),
+        supabase.from('quiz_text_keys').select('answer, credit').eq('question_id', id).order('position'),
+        supabase.from('quiz_reveal_images').select('image_url').eq('question_id', id).maybeSingle(),
       ])
       if (question.error) throw question.error
       if (options.error) throw options.error
       if (keys.error) throw keys.error
       if (numberKey.error) throw numberKey.error
+      if (textKeys.error) throw textKeys.error
+      if (revealImage.error) throw revealImage.error
       return {
         question: { ...question.data, kind: question.data.kind as QuestionKind },
         options: options.data,
         correctOptionIds: keys.data.map((r) => r.correct_option_id),
         correctNumber: numberKey.data?.value ?? null,
+        textKeys: textKeys.data.map((r) => ({ answer: r.answer, credit: Number(r.credit) })),
+        revealImageUrl: revealImage.data?.image_url ?? null,
       }
     },
   })

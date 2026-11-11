@@ -7,6 +7,7 @@ import { friendlyError } from '../../lib/errors'
 import { supabase } from '../../lib/supabase'
 import { CountdownBadge } from './CountdownBadge'
 import { optionStyle } from './optionStyles'
+import { mainTextAnswer } from './useCurrentQuestion'
 import { Podium } from './Podium'
 import { QuizRanking } from './QuizRanking'
 import { useAnswerCount } from './useAnswerCount'
@@ -105,12 +106,30 @@ export function HostQuiz({ party, players, refetchParty }: Props) {
               <p className="-mb-3 text-sm font-bold text-lilac">
                 {current.kind === 'multi'
                   ? '☑️ Pots marcar-ne més d’una'
-                  : `🔢 Tria un número del 0 al ${current.number_max}`}
+                  : current.kind === 'text'
+                    ? '✍️ Resposta escrita'
+                    : `🔢 Tria un número del 0 al ${current.number_max}`}
               </p>
             )}
             <p className="font-display text-3xl leading-tight font-bold break-words">{current.text}</p>
             {current.image_url && (
               <img src={current.image_url} alt="" className="max-h-72 w-full rounded-3xl object-cover shadow-card" />
+            )}
+            {current.kind === 'text' && status === 'revealed' && (
+              <div className="flex animate-pop flex-col items-center gap-1 rounded-3xl bg-mint-soft px-4 py-5 text-center shadow-card">
+                <p className="font-bold text-ink-soft">La resposta era</p>
+                <p className="font-display text-5xl leading-none font-bold break-words">
+                  {mainTextAnswer(current.textKeys)}
+                </p>
+                {current.textKeys.some((k) => k.credit < 1) && (
+                  <p className="text-sm text-ink-soft">
+                    Mig punt: {current.textKeys.filter((k) => k.credit < 1).map((k) => k.answer).join(', ')}
+                  </p>
+                )}
+              </div>
+            )}
+            {status === 'revealed' && current.revealImageUrl && (
+              <img src={current.revealImageUrl} alt="" className="max-h-80 w-full animate-pop rounded-3xl object-cover shadow-card" />
             )}
             {current.kind === 'number' && status === 'revealed' && (
               <div className="flex animate-pop flex-col items-center gap-1 rounded-3xl bg-mint-soft py-5 shadow-card">

@@ -1,13 +1,15 @@
 import { useRealtimeRefetch } from '../../hooks/useRealtimeRefetch'
 import type { Tables } from '../../lib/database.types'
 import { supabase } from '../../lib/supabase'
-import type { QuestionKind } from './useCurrentQuestion'
+import type { QuestionKind, TextKey } from './useCurrentQuestion'
 
 export type HostQuestion = Tables<'quiz_questions'> & {
   kind: QuestionKind
   options: Tables<'quiz_options'>[]
   correctOptionIds: string[]
   correctNumber: number | null
+  textKeys: TextKey[]
+  revealImageUrl: string | null
 }
 
 // Host only: every question, in order, with its options and answers (RLS
@@ -19,16 +21,21 @@ export function useQuizQuestions(enabled = true) {
     tables: ['party_state'],
     enabled,
     fetcher: async (): Promise<HostQuestion[]> => {
-      const [questions, options, keys, numberKeys] = await Promise.all([
+      const [questions, options, keys, numberKeys, textKeys, revealImages] = await Promise.all([
         supabase.from('quiz_questions').select('*').order('position'),
         supabase.from('quiz_options').select('*').order('position'),
         supabase.from('quiz_keys').select('*'),
         supabase.from('quiz_number_keys').select('*'),
+        supabase.from('quiz_text_keys').select('*').order('position'),
+        supabase.from('quiz_reveal_images').select('*'),
       ])
       if (questions.error) throw questions.error
       if (options.error) throw options.error
       if (keys.error) throw keys.error
       if (numberKeys.error) throw numberKeys.error
+      if (textKeys.error) throw textKeys.error
+      if (revealImages.error) throw revealImages.error
+      const imageByQuestion = new Map(revealImages.data.map((r) => [r.question_id, r.image_url]))
       const numberByQuestion = new Map(numberKeys.data.map((k) => [k.question_id, k.value]))
       return questions.data.map((q) => ({
         ...q,
@@ -36,6 +43,10 @@ export function useQuizQuestions(enabled = true) {
         options: options.data.filter((o) => o.question_id === q.id),
         correctOptionIds: keys.data.filter((k) => k.question_id === q.id).map((k) => k.correct_option_id),
         correctNumber: numberByQuestion.get(q.id) ?? null,
+        textKeys: textKeys.data
+          .filter((k) => k.question_id === q.id)
+          .map((k) => ({ answer: k.answer, credit: Number(k.credit) })),
+        revealImageUrl: imageByQuestion.get(q.id) ?? null,
       }))
     },
   })

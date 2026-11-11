@@ -5,8 +5,10 @@
 -- It REPLACES all questions. To protect the party, it refuses to run once
 -- anyone has answered (that would delete answers and orphan quiz points).
 --
--- Every question: "text", optionally "time" (seconds, 5–120, default 20)
--- and "image" (URL). Then, by "type" (default "single"):
+-- Every question: "text", optionally "time" (seconds, 5–120, default 20),
+-- "image" (URL, shown while the question is open) and "reveal_image" (URL,
+-- shown only at the reveal: use it for photos that give the answer away).
+-- Then, by "type" (default "single"):
 --   single: "options" (2–6) and "correct": one letter ("A", "B"…).
 --   multi:  "options" (2–6) and "correct": a list of letters (["A", "C"]).
 --           Any wrong mark scores 0; otherwise the share of correct ones
@@ -15,6 +17,9 @@
 --           (0–max) and optionally "close": answers within that distance
 --           get half points (default 0: only the exact answer scores).
 --           No options.
+--   text:   "answers": list of spellings worth full points (the first is
+--           shown at the reveal) and optionally "close": list worth half.
+--           Compared in lower case, without accents, spaces or punctuation.
 
 do $$
 declare
@@ -70,11 +75,47 @@ begin
     "max": 60,
     "answer": 42,
     "close": 2
+  },
+  {
+    "type": "text",
+    "text": "Com es diu el seu millor company de vida?",
+    "answers": ["Nuc"],
+    "close": ["Nuk", "Nuck"],
+    "reveal_image": "https://example.com/nuc.jpg",
+    "time": 25
   }
 ]
 $json$::jsonb) loop
     v_pos := v_pos + 1;
     v_kind := coalesce(q->>'type', 'single');
+
+    if v_kind = 'text' then
+      if jsonb_typeof(q->'answers') is distinct from 'array' or jsonb_array_length(q->'answers') = 0 then
+        raise exception 'Question %: a text question needs "answers" (a list)', v_pos;
+      end if;
+
+      insert into public.quiz_questions (position, text, kind, time_limit_s, image_url)
+      values (v_pos, q->>'text', 'text', coalesce((q->>'time')::int, 20), q->>'image')
+      returning id into v_qid;
+
+      -- Full-credit answers first (the first one is shown at the reveal),
+      -- then the half-credit spellings from "close".
+      insert into public.quiz_text_keys (question_id, position, answer, credit)
+      select v_qid, row_number() over (), a.answer, a.credit
+      from (
+        select value as answer, 1.0 as credit, 0 as grp, ord
+        from jsonb_array_elements_text(q->'answers') with ordinality as t(value, ord)
+        union all
+        select value, 0.5, 1, ord
+        from jsonb_array_elements_text(coalesce(q->'close', '[]'::jsonb)) with ordinality as t(value, ord)
+        order by grp, ord
+      ) a;
+
+      if q->>'reveal_image' is not null then
+        insert into public.quiz_reveal_images (question_id, image_url) values (v_qid, q->>'reveal_image');
+      end if;
+      continue;
+    end if;
 
     if v_kind = 'number' then
       if (q->>'max') is null or (q->>'answer') is null
@@ -88,6 +129,9 @@ $json$::jsonb) loop
       returning id into v_qid;
 
       insert into public.quiz_number_keys (question_id, value) values (v_qid, (q->>'answer')::int);
+      if q->>'reveal_image' is not null then
+        insert into public.quiz_reveal_images (question_id, image_url) values (v_qid, q->>'reveal_image');
+      end if;
       continue;
     end if;
 
@@ -126,6 +170,10 @@ $json$::jsonb) loop
         insert into public.quiz_keys (question_id, correct_option_id) values (v_qid, v_oid);
       end if;
     end loop;
+
+    if q->>'reveal_image' is not null then
+      insert into public.quiz_reveal_images (question_id, image_url) values (v_qid, q->>'reveal_image');
+    end if;
   end loop;
 
   raise notice 'Loaded % questions', v_pos;

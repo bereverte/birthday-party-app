@@ -12,6 +12,8 @@ const known: Array<[RegExp, string]> = [
   [/question is not open/i, 'Aquesta pregunta ja està tancada.'],
   [/host cannot answer/i, 'L’amfitriona no juga el quiz 😉'],
   [/pick at least one option/i, 'Marca almenys una opció.'],
+  [/write an answer/i, 'Escriu una resposta.'],
+  [/answer too long/i, 'Massa llarga: com a molt 60 caràcters.'],
   [/number out of range/i, 'Aquest número no val.'],
   [/wrong answer type/i, 'Aquesta pregunta ha canviat. Recarrega la pàgina.'],
   [/close the current question first/i, 'Primer tanca la pregunta que està oberta.'],

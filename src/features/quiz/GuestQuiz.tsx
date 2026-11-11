@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Button } from '../../components/ui/Button'
 import { Card } from '../../components/ui/Card'
 import { Screen } from '../../components/ui/Screen'
+import { TextInput } from '../../components/ui/TextInput'
 import { StatusPill } from '../../components/ui/StatusPill'
 import type { PartyState } from '../../hooks/usePartyState'
 import type { Player } from '../../hooks/usePlayers'
@@ -12,10 +13,10 @@ import { CountdownBadge } from './CountdownBadge'
 import { NumberPicker } from './NumberPicker'
 import { optionStyle } from './optionStyles'
 import { QuizRanking } from './QuizRanking'
-import { multiFraction } from './scoring'
+import { multiFraction, textCredit } from './scoring'
 import { useAutoCloseQuestion } from './useAutoCloseQuestion'
 import { useCountdown } from './useCountdown'
-import { hasKey, useCurrentQuestion, type CurrentQuestion } from './useCurrentQuestion'
+import { hasKey, mainTextAnswer, useCurrentQuestion, type CurrentQuestion } from './useCurrentQuestion'
 import { useMyAnswer } from './useMyAnswer'
 import { useQuizLeaderboard } from './useQuizLeaderboard'
 
@@ -27,9 +28,10 @@ type Props = {
 }
 
 // What I sent, shown while the RPC is on its way (and before the refetch).
-type Sent = { questionId: string; optionIds: string[]; numberValue: number | null }
+type Answer = { optionIds: string[]; numberValue: number | null; textValue: string | null }
+type Sent = Answer & { questionId: string }
 // What I'm composing on a multi or number question, before "Confirmar".
-type Draft = { questionId: string; optionIds: string[]; numberValue: number }
+type Draft = { questionId: string; optionIds: string[]; numberValue: number; textValue: string }
 
 // The guest's quiz: waiting → question open → answered / time up → reveal
 // with points and ranking. Everything is derived from party_state and the
@@ -94,7 +96,9 @@ export function GuestQuiz({ me, party, status, refetchParty }: Props) {
   const answered = !!answer.data?.answered || !!mySent
   const myOptionIds = answer.data?.answered ? answer.data.optionIds : (mySent?.optionIds ?? [])
   const myNumber = answer.data?.answered ? answer.data.numberValue : (mySent?.numberValue ?? null)
-  const draft = draftState?.questionId === questionId ? draftState : { questionId, optionIds: [], numberValue: 0 }
+  const myText = answer.data?.answered ? answer.data.textValue : (mySent?.textValue ?? null)
+  const draft =
+    draftState?.questionId === questionId ? draftState : { questionId, optionIds: [], numberValue: 0, textValue: '' }
 
   // Wait for the answer too: right after the reveal the data may still be
   // the pre-reveal read, and "wrong!" must never flash.
@@ -102,9 +106,9 @@ export function GuestQuiz({ me, party, status, refetchParty }: Props) {
   const timeUp = !open || seconds === 0
   const locked = answered || timeUp || sending
 
-  async function send(optionIds: string[], numberValue: number | null) {
+  async function send({ optionIds, numberValue, textValue }: Answer) {
     if (!questionId || locked) return
-    setSent({ questionId, optionIds, numberValue })
+    setSent({ questionId, optionIds, numberValue, textValue })
     setSending(true)
     setError(null)
     const { error: rpcError } =
@@ -112,7 +116,9 @@ export function GuestQuiz({ me, party, status, refetchParty }: Props) {
         ? await supabase.rpc('submit_answer', { p_question_id: questionId, p_option_id: optionIds[0] })
         : kind === 'multi'
           ? await supabase.rpc('submit_multi_answer', { p_question_id: questionId, p_option_ids: optionIds })
-          : await supabase.rpc('submit_number_answer', { p_question_id: questionId, p_value: numberValue ?? 0 })
+          : kind === 'number'
+            ? await supabase.rpc('submit_number_answer', { p_question_id: questionId, p_value: numberValue ?? 0 })
+            : await supabase.rpc('submit_text_answer', { p_question_id: questionId, p_text: textValue ?? '' })
     setSending(false)
     if (rpcError) {
       setSent(null)
@@ -123,7 +129,7 @@ export function GuestQuiz({ me, party, status, refetchParty }: Props) {
 
   function toggle(optionId: string) {
     if (locked) return
-    if (kind === 'single') return void send([optionId], null)
+    if (kind === 'single') return void send({ optionIds: [optionId], numberValue: null, textValue: null })
     const ids = draft.optionIds.includes(optionId)
       ? draft.optionIds.filter((id) => id !== optionId)
       : [...draft.optionIds, optionId]
@@ -150,14 +156,44 @@ export function GuestQuiz({ me, party, status, refetchParty }: Props) {
       )}
 
       {revealed && answer.data && (
-        <RevealCard data={data} optionIds={myOptionIds} numberValue={myNumber} points={answer.data.points} />
+        <RevealCard
+          data={data}
+          optionIds={myOptionIds}
+          numberValue={myNumber}
+          textValue={myText}
+          points={answer.data.points}
+        />
+      )}
+
+      {revealed && data.revealImageUrl && (
+        <img src={data.revealImageUrl} alt="" className="max-h-72 w-full animate-pop rounded-3xl object-cover shadow-card" />
       )}
 
       {kind === 'multi' && !answered && !timeUp && (
         <p className="-mb-3 text-center font-bold text-lilac">☑️ Pots marcar-ne més d’una</p>
       )}
 
-      {kind === 'number' ? (
+      {kind === 'text' ? (
+        <form
+          onSubmit={(e) => {
+            e.preventDefault()
+            if (draft.textValue.trim()) void send({ optionIds: [], numberValue: null, textValue: draft.textValue })
+          }}
+        >
+          <TextInput
+            label="La teua resposta"
+            value={answered ? (myText ?? '') : draft.textValue}
+            onChange={(e) => setDraft({ ...draft, textValue: e.target.value })}
+            disabled={locked}
+            maxLength={60}
+            autoComplete="off"
+            autoCorrect="off"
+            spellCheck={false}
+            enterKeyHint="send"
+            placeholder="Escriu-la ací"
+          />
+        </form>
+      ) : kind === 'number' ? (
         <NumberPicker
           value={answered ? (myNumber ?? 0) : draft.numberValue}
           max={data.question.number_max ?? 10}
@@ -179,8 +215,16 @@ export function GuestQuiz({ me, party, status, refetchParty }: Props) {
         <Button
           size="lg"
           loading={sending}
-          disabled={kind === 'multi' && draft.optionIds.length === 0}
-          onClick={() => void send(draft.optionIds, draft.numberValue)}
+          disabled={
+            (kind === 'multi' && draft.optionIds.length === 0) || (kind === 'text' && !draft.textValue.trim())
+          }
+          onClick={() =>
+            void send({
+              optionIds: draft.optionIds,
+              numberValue: kind === 'number' ? draft.numberValue : null,
+              textValue: kind === 'text' ? draft.textValue : null,
+            })
+          }
         >
           Confirmar
         </Button>
@@ -273,15 +317,18 @@ function RevealCard({
   data,
   optionIds,
   numberValue,
+  textValue,
   points,
 }: {
   data: CurrentQuestion
   optionIds: string[]
   numberValue: number | null
+  textValue: string | null
   points: number | null
 }) {
   const kind = data.question.kind
-  const answered = kind === 'number' ? numberValue !== null : optionIds.length > 0
+  const answered =
+    kind === 'number' ? numberValue !== null : kind === 'text' ? !!textValue : optionIds.length > 0
   const pointsText = points !== null ? `+${points} punts` : null
 
   let result: { emoji: string; title: string; text: string | null; tone: 'party' | 'sun' | 'paper' }
@@ -302,6 +349,15 @@ function RevealCard({
               tone: 'sun',
             }
           : { emoji: '🙈', title: `Era ${data.correctNumber}`, text: `Has dit ${numberValue}.`, tone: 'paper' }
+  } else if (kind === 'text') {
+    const credit = textCredit(data.textKeys, textValue ?? '')
+    const main = mainTextAnswer(data.textKeys)
+    result =
+      credit >= 1
+        ? { emoji: '🎉', title: `Correcte! Era ${main}`, text: pointsText, tone: 'party' }
+        : credit > 0
+          ? { emoji: '🤏', title: `Quasi! Era ${main}`, text: pointsText ? `${pointsText} (la meitat)` : null, tone: 'sun' }
+          : { emoji: '🙈', title: `Era ${main}`, text: `Has escrit “${textValue}”.`, tone: 'paper' }
   } else if (kind === 'multi') {
     const f = multiFraction(data, optionIds)
     result =

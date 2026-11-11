@@ -101,6 +101,9 @@ Locally, `seed.sql` loads three sample questions. Production has no seed, so the
    - `single` (default): `options` (2 to 6) and `correct`, one letter (`"A"`).
    - `multi`: `options` and `correct`, a list of letters (`["A", "C"]`). Any wrong mark scores 0.
    - `number`: `max` (10 or less works best with the − / + buttons), `answer`, and optionally `close`: answers that far off or closer get half points (default 0, exact only).
+   - `text`: `answers`, a list of spellings worth full points (the first is shown at the reveal), and optionally `close`, a list worth half. They're compared in lower case, without accents, spaces or punctuation.
+
+   Any question can also have `reveal_image`, a URL shown only at the reveal (for a photo that would give the answer away).
 3. Paste the whole file into the Supabase dashboard → SQL Editor and run it. It replaces every question and prints `Loaded N questions`.
 
 The script refuses to run once anyone has answered, so it can't wipe a quiz in progress. Load the questions before the party, and test them with a run-through. After a test run, delete the test players' answers and points first.
