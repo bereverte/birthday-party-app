@@ -33,7 +33,8 @@ React + TypeScript + Tailwind (Vite), Supabase (Postgres + Realtime + Auth), dep
 - Phase 4 (done): deploy. Production: https://birthday-party-app-brown.vercel.app (Vercel auto-deploys `main`). Cloud Supabase project ref `aljqfmjoapqmogvbwsne`, schema from migrations, no seed. See README "Deploy".
 - Phase 4.5 (done): visual redesign to the "soft" look (DECISIONS 029).
 - Phase 5 (done): quiz with single, multi-select and number questions (DECISIONS 030–031). Real questions are loaded by hand with `supabase/quiz-content.example.sql` (README).
-- Next: challenges, then show, leaderboards.
+- Phase 6 (done): challenges, created from /host, one active at a time, select players + preset points (DECISIONS 033).
+- Next: show, then leaderboards.
 - Extra if time allows: avatar builder (e.g. DiceBear) to replace the emoji picker.
 
 ## Reuse before writing new code

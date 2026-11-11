@@ -108,6 +108,10 @@ Locally, `seed.sql` loads three sample questions. Production has no seed, so the
 
 The script refuses to run once anyone has answered, so it can't wipe a quiz in progress. Load the questions before the party, and test them with a run-through. After a test run, delete the test players' answers and points first.
 
+## Challenges
+
+Challenges are created from `/host` (phase "🏃 Proves" → "+ Nova"), locally and in production; `seed.sql` adds two samples locally. During the party: start a challenge, tap the players who won (or a whole team), then tap the points. Tapping again overwrites; "Treure punts" removes them. A challenge with points can't be deleted until its points are removed. The point buttons come from `scoring_config.challenge_presets` (default 100, 50, 25, 10).
+
 ## Deploy
 
 Production: <https://birthday-party-app-brown.vercel.app>

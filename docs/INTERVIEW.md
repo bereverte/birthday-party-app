@@ -281,3 +281,32 @@ Després d'un `db reset` local, els navegadors dels convidats guardaven un token
 **La frase:** "La puntuació la proven els tests, i el flux l'he jugat amb diversos navegadors alhora."
 
 62 tests pgTAP, entre ells el tancament per part d'un convidat, les crides alhora, cada cas de puntuació i la resposta amagada fins al reveal. També un script de Node que simula dos convidats contra la Supabase local (responen, intenten tancar massa d'hora i tanquen alhora) i, finalment, partides de prova amb l'amfitriona a Chrome i convidats a Firefox i Edge.
+
+## Fase 6 — Les proves
+
+### Començar una prova és una sola operació (033)
+**La frase:** "Canviar de prova toca dues taules, així que ho fa una funció del servidor en una sola transacció."
+
+Quan l'amfitriona comença una prova, l'anterior passa a feta, la nova a activa i `party_state` apunta a la nova. Si ho fera el client amb tres crides, una connexió que cau a mitges podria deixar dues proves actives o la pantalla dels convidats apuntant a la prova equivocada. A més, un índex únic parcial (`where status = 'active'`) garanteix a la base de dades que només n'hi pot haver una d'activa, encara que algú escriga directament a la taula.
+
+**Pregunta de seguiment:** *Per què un índex i no només la funció?* → Perquè la funció només protegeix el camí "bo". L'amfitriona també pot editar la taula (per RLS), i la regla ha d'aguantar per qualsevol camí.
+
+### Puntuar un equip d'un sol toc (008, 033)
+**La frase:** "La festa és caòtica, així que puntuar ha de ser tocar caretes i un botó."
+
+L'amfitriona selecciona qui ha guanyat (una persona o tot l'equip) i toca 🥇 100, 🥈 50, 🥉 25 o 🙌 10, o escriu un número. És una sola crida a `award_challenge_points`. Si s'equivoca, torna a tocar i el valor se sobreescriu (la clau única del ledger fa que no se sumen), o tria "Treure punts". La barra de punts és *sticky* perquè, amb 30 jugadors al mòbil, no calga fer scroll per arribar-hi.
+
+### No es pot esborrar una prova amb punts (033)
+**La frase:** "Una prova amb punts no s'esborra fins que no traus els punts a propòsit."
+
+`points_ledger.source_id` no és una clau forana, perquè pot apuntar a una pregunta, una prova o una actuació. Si s'esborrara una prova puntuada, els punts quedarien orfes al rànquing. La política de `delete` usa `challenge_has_points()`, el mateix patró que vaig fer per als jugadors amb activitat (024). Un esborrat refusat per RLS torna "0 files", no un error, i la UI ho explica.
+
+### Un component de rànquing per als dos premis
+**La frase:** "Els dos rànquings són la mateixa consulta sobre vistes diferents, així que comparteixen component."
+
+Vaig moure el rànquing del quiz a `features/leaderboard/` i el vaig fer genèric. El de la festa llegeix la vista `party_leaderboard` (proves + show, amfitriona inclosa) i el del quiz `quiz_leaderboard`. Els dos escolten `points_ledger`, amb el mateix patró de "timbre i tornar a llegir".
+
+### Com ho he provat
+**La frase:** "Les regles noves de la base de dades tenen un test cadascuna."
+
+15 tests pgTAP nous (91 en total): només l'amfitriona comença o acaba proves, només en la fase de proves, només una activa, l'esborrat bloquejat amb punts i permès sense, i les longituds.
