@@ -5,6 +5,8 @@
 -- It REPLACES all questions. To protect the party, it refuses to run once
 -- anyone has answered (that would delete answers and orphan quiz points).
 --
+-- Add "skip": true to keep a question in the file without loading it.
+--
 -- Every question: "text", optionally "time" (seconds, 5–120, default 20),
 -- "image" (URL, shown while the question is open) and "reveal_image" (URL,
 -- shown only at the reveal: use it for photos that give the answer away).
@@ -86,6 +88,10 @@ begin
   }
 ]
 $json$::jsonb) loop
+    -- "skip": true keeps a question in the file without loading it.
+    if coalesce((q->>'skip')::boolean, false) then
+      continue;
+    end if;
     v_pos := v_pos + 1;
     v_kind := coalesce(q->>'type', 'single');
 
