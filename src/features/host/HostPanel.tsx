@@ -13,6 +13,7 @@ import { getClockOffset } from '../../lib/serverClock'
 import { supabase } from '../../lib/supabase'
 import { HostChallenges } from '../challenges/HostChallenges'
 import { HostQuiz } from '../quiz/HostQuiz'
+import { HostShow } from '../show/HostShow'
 
 const phaseLabels: Record<Phase, string> = {
   lobby: '🎈 Lobby',
@@ -105,6 +106,7 @@ export function HostPanel({ me, party, players, online, status, refetchAll }: Pr
       {party.phase === 'challenges' && (
         <HostChallenges party={party} players={players} refetchParty={refetchAll} />
       )}
+      {party.phase === 'show' && <HostShow me={me} party={party} players={players} refetchParty={refetchAll} />}
 
       <div className="grid gap-6 lg:grid-cols-[1fr_1.2fr]">
         <div className="flex flex-col gap-6">
