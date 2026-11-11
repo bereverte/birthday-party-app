@@ -1,9 +1,9 @@
 import { Card } from '../../components/ui/Card'
 import { EmojiAvatar } from '../../components/ui/EmojiAvatar'
-import type { QuizRank } from './useQuizLeaderboard'
+import type { Rank } from './rank'
 
 type Props = {
-  ranks: QuizRank[]
+  ranks: Rank[]
   limit?: number
   // Highlighted, and added at the end if it's outside the top `limit`.
   meId?: string
@@ -11,7 +11,7 @@ type Props = {
 
 const medals: Record<number, string> = { 1: '🥇', 2: '🥈', 3: '🥉' }
 
-export function QuizRanking({ ranks, limit = 5, meId }: Props) {
+export function Ranking({ ranks, limit = 5, meId }: Props) {
   const top = ranks.slice(0, limit)
   const me = meId ? ranks.find((r) => r.playerId === meId) : undefined
   const rows = me && !top.includes(me) ? [...top, me] : top

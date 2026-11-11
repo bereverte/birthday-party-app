@@ -18,6 +18,13 @@ const known: Array<[RegExp, string]> = [
   [/wrong answer type/i, 'Aquesta pregunta ha canviat. Recarrega la pàgina.'],
   [/close the current question first/i, 'Primer tanca la pregunta que està oberta.'],
   [/close the question before revealing/i, 'Primer tanca la pregunta.'],
+  [/not in the challenges phase/i, 'Primer posa la fase de proves.'],
+  [/challenge not found/i, 'Aquesta prova ja no existeix.'],
+  [/select at least one player/i, 'Selecciona almenys un jugador.'],
+  [/points must be zero or more/i, 'Els punts han de ser 0 o més.'],
+  [/challenges_name_length/i, 'El nom de la prova ha de tindre entre 1 i 40 caràcters.'],
+  [/challenges_description_length/i, 'La descripció pot tindre com a molt 200 caràcters.'],
+  [/challenges_emoji_length/i, 'Posa un sol emoji.'],
   [/invalid email|unable to validate email/i, 'Aquest correu no sembla vàlid.'],
 ]
 

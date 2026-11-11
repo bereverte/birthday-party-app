@@ -12,7 +12,7 @@ import { supabase } from '../../lib/supabase'
 import { CountdownBadge } from './CountdownBadge'
 import { NumberPicker } from './NumberPicker'
 import { optionStyle } from './optionStyles'
-import { QuizRanking } from './QuizRanking'
+import { Ranking } from '../leaderboard/Ranking'
 import { multiFraction, textCredit } from './scoring'
 import { useAutoCloseQuestion } from './useAutoCloseQuestion'
 import { useCountdown } from './useCountdown'
@@ -237,7 +237,7 @@ export function GuestQuiz({ me, party, status, refetchParty }: Props) {
       {revealed && ranking.data && (
         <section className="flex flex-col gap-3">
           <h2 className="text-2xl font-bold">Rànquing</h2>
-          <QuizRanking ranks={ranking.data} meId={me.id} />
+          <Ranking ranks={ranking.data} meId={me.id} />
         </section>
       )}
     </Screen>

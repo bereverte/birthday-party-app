@@ -5,14 +5,13 @@ import type { Phase } from '../../hooks/usePartyState'
 import type { RealtimeStatus } from '../../hooks/useRealtimeRefetch'
 
 // Temporary screens until each feature exists.
-const copy: Record<Exclude<Phase, 'lobby'>, { emoji: string; title: string; text: string; tone: 'pink' | 'mint' | 'lilac' | 'sky' }> = {
+const copy: Record<Exclude<Phase, 'lobby' | 'challenges'>, { emoji: string; title: string; text: string; tone: 'pink' | 'mint' | 'lilac' | 'sky' }> = {
   quiz: { emoji: '🧠', title: 'Comença el quiz!', text: 'Prepara’t: les preguntes apareixeran ací.', tone: 'pink' },
-  challenges: { emoji: '🏃', title: 'Hora de les proves!', text: 'Fes cas a l’amfitriona i dona-ho tot.', tone: 'mint' },
   show: { emoji: '🎤', title: 'El show final!', text: 'Prompte podràs votar les actuacions.', tone: 'lilac' },
   finished: { emoji: '🏆', title: 'S’ha acabat la festa!', text: 'Gràcies per vindre. Ara toca el pastís.', tone: 'sky' },
 }
 
-export function PhasePlaceholder({ phase, status }: { phase: Exclude<Phase, 'lobby'>; status: RealtimeStatus }) {
+export function PhasePlaceholder({ phase, status }: { phase: Exclude<Phase, 'lobby' | 'challenges'>; status: RealtimeStatus }) {
   const { emoji, title, text, tone } = copy[phase]
   return (
     <Screen>

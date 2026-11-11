@@ -9,7 +9,7 @@ import { CountdownBadge } from './CountdownBadge'
 import { optionStyle } from './optionStyles'
 import { mainTextAnswer } from './useCurrentQuestion'
 import { Podium } from './Podium'
-import { QuizRanking } from './QuizRanking'
+import { Ranking } from '../leaderboard/Ranking'
 import { useAnswerCount } from './useAnswerCount'
 import { useAutoCloseQuestion } from './useAutoCloseQuestion'
 import { useCountdown } from './useCountdown'
@@ -206,7 +206,7 @@ export function HostQuiz({ party, players, refetchParty }: Props) {
       {status === 'revealed' && !showPodium && ranking.data && (
         <section className="flex flex-col gap-3">
           <h2 className="text-2xl font-bold">Rànquing</h2>
-          <QuizRanking ranks={ranking.data} />
+          <Ranking ranks={ranking.data} />
         </section>
       )}
 

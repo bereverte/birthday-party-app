@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { ErrorScreen } from '../components/ui/ErrorScreen'
 import { LoadingScreen } from '../components/ui/LoadingScreen'
+import { GuestChallenges } from '../features/challenges/GuestChallenges'
 import { JoinForm } from '../features/join/JoinForm'
 import { Lobby } from '../features/join/Lobby'
 import { PhasePlaceholder } from '../features/join/PhasePlaceholder'
@@ -62,6 +63,9 @@ export default function GuestPage() {
   }
   if (phase === 'quiz') {
     return <GuestQuiz me={me} party={party.data} status={party.status} refetchParty={() => void party.refetch()} />
+  }
+  if (phase === 'challenges') {
+    return <GuestChallenges me={me} party={party.data} status={party.status} />
   }
   return <PhasePlaceholder phase={phase} status={party.status} />
 }

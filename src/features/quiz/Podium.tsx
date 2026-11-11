@@ -1,5 +1,5 @@
 import { EmojiAvatar } from '../../components/ui/EmojiAvatar'
-import type { QuizRank } from './useQuizLeaderboard'
+import type { Rank } from '../leaderboard/rank'
 
 // Top 3 on steps: 2nd · 1st · 3rd. Ties share a step (same rank).
 const steps = [
@@ -8,7 +8,7 @@ const steps = [
   { rank: 3, height: 'h-14', medal: '🥉' },
 ]
 
-export function Podium({ ranks }: { ranks: QuizRank[] }) {
+export function Podium({ ranks }: { ranks: Rank[] }) {
   return (
     <div className="grid grid-cols-3 items-end gap-3">
       {steps.map((step) => {
