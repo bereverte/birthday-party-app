@@ -442,11 +442,17 @@ isOneToOne: false
 "cast_vote":
 { Args: { "p_act_id": string,"p_score": number }; Returns: undefined
                            },
+"challenge_has_points":
+{ Args: { "p_challenge_id": string }; Returns: boolean
+                           },
 "close_question":
 { Args: Record<PropertyKey, never>; Returns: boolean
                            },
 "close_voting":
 { Args: { "p_act_id": string }; Returns: undefined
+                           },
+"finish_challenge":
+{ Args: Record<PropertyKey, never>; Returns: undefined
                            },
 "is_host":
 { Args: Record<PropertyKey, never>; Returns: boolean
@@ -481,6 +487,9 @@ isOneToOne: false
                            },
 "sign_up_act":
 { Args: { "p_member_ids": (string)[],"p_title": string }; Returns: string
+                           },
+"start_challenge":
+{ Args: { "p_challenge_id": string }; Returns: undefined
                            },
 "submit_answer":
 { Args: { "p_option_id": string,"p_question_id": string }; Returns: undefined
