@@ -112,6 +112,10 @@ The script refuses to run once anyone has answered, so it can't wipe a quiz in p
 
 Challenges are created from `/host` (phase "🏃 Proves" → "+ Nova"), locally and in production; `seed.sql` adds two samples locally. During the party: start a challenge, tap the players who won (or a whole team), then tap the points. Tapping again overwrites; "Treure punts" removes them. A challenge with points can't be deleted until its points are removed. The point buttons come from `scoring_config.challenge_presets` (default 100, 50, 25, 10).
 
+## Show
+
+Guests sign up from the floating "🎤 Apunta't al show" button (any phase except while a quiz question is open): a title and, optionally, partners. They can withdraw it until it goes on stage. The host can sign up her own act from `/host` too. During the party, in phase "🎤 Show": ▶️ start an act → 🗳️ open voting (everyone except the act's members votes 1–5 stars, the host included) → ✅ close voting, which gives each member avg × `scoring_config.show_points_per_star` (default 100). A closed act can be started again to redo it. An act with points can't be deleted.
+
 ## Deploy
 
 Production: <https://birthday-party-app-brown.vercel.app>

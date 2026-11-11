@@ -312,3 +312,32 @@ Vaig moure el rànquing del quiz a `features/leaderboard/` i el vaig fer genèri
 15 tests pgTAP nous (91 en total): només l'amfitriona comença o acaba proves, només en la fase de proves, només una activa, l'esborrat bloquejat amb punts i permès sense, i les longituds. Després vaig jugar el flux sencer en local, amb l'amfitriona a l'ordinador i un convidat al mòbil per la wifi: començar una prova, puntuar, corregir, treure punts i acabar-la.
 
 **Pregunta de seguiment:** *Per què l'amfitriona a l'ordinador i no al mòbil?* → En local, l'enllaç del magic link apunta a `127.0.0.1`, que al mòbil és el mateix mòbil. Els convidats entren de manera anònima, sense correu, i funcionen bé al mòbil. El login de l'amfitriona des del mòbil es prova a producció, on l'enllaç va a l'adreça de Vercel.
+
+## Fase 7 — El show final
+
+### Actua → Vota → Resultat (034)
+**La frase:** "Cada actuació passa per tres estats, i cada canvi és una funció del servidor."
+
+L'amfitriona toca ▶️ Començar (`start_act`), 🗳️ Obrir votació (`open_voting`) i ✅ Tancar (`close_voting`, que ja existia i dona els punts). Separar "actuant" de "votant" fa que ningú vote abans que l'actuació acabe, i dona a tots els mòbils una pantalla clara de "Ara a l'escenari". Un índex únic parcial garanteix que només hi ha una actuació a l'escenari, encara que s'escriga directament a la taula (el mateix patró que les proves, 033).
+
+**Pregunta de seguiment:** *Què passa si l'amfitriona toca "Següent" mentre encara s'està votant?* → La base de dades ho refusa ("Primer tanca la votació"). Si no, eixos vots es quedarien sense puntuar per un toc equivocat.
+
+### No pots votar la teua actuació (009, 034)
+**La frase:** "La regla de no votar-se a si mateix està a la base de dades, no al botó."
+
+`cast_vote` comprova que qui vota no és membre de l'actuació, i la UI només ho explica ("No pots votar la teua actuació 🙈"). Si la regla estiguera només al frontend, qualsevol podria cridar l'RPC des de la consola. Tornar a votar canvia el vot (upsert), així que no es pot votar dues vegades.
+
+### Realtime amb RLS per als vots (034)
+**La frase:** "He afegit els vots a Realtime sense filtrar res: Realtime aplica l'RLS de cada subscriptor."
+
+L'amfitriona veu el comptador de vots en directe (5 / 28). Els convidats escolten la mateixa taula, però l'RLS fa que cadascú només reba el seu vot. El resultat que veuen els convidats ve del ledger de punts (punts ÷ punts per estrela), així que mai no llegeixen el vot de ningú altre.
+
+### Apuntar-se durant tota la festa (034)
+**La frase:** "La inscripció és un botó flotant que viu a la pàgina, no a cada pantalla."
+
+`GuestPage` embolica les pantalles del lobby, el quiz i les proves amb un botó "🎤 Apunta't al show". No hi ha ruta nova: és un estat local que mostra la pantalla d'inscripció. S'amaga mentre una pregunta del quiz està oberta, perquè ningú perda punts per distraure's. Cadascú pot retirar la seua actuació mentre encara no ha passat per l'escenari (`withdraw_act`).
+
+### Com ho he provat
+**La frase:** "Cada regla nova té un test, i el flux sencer l'he provat contra l'API real amb tres usuaris."
+
+16 tests pgTAP nous (107 en total): només l'amfitriona i només en la fase show, una sola actuació a l'escenari, no es pot canviar mentre es vota, no es pot votar mentre s'actua, retirar només la teua i només si està pendent, i l'esborrat bloquejat amb punts. A més, un script amb `supabase-js` va jugar una actuació sencera amb tres sessions anònimes (amfitriona + dos convidats) contra el Supabase local, per comprovar l'RLS dels vots i la consulta dels membres tal com la fa el frontend.

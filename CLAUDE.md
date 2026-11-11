@@ -35,7 +35,8 @@ React + TypeScript + Tailwind (Vite), Supabase (Postgres + Realtime + Auth), dep
 - Phase 5 (done): quiz with single, multi-select and number questions (DECISIONS 030–031). Real questions are loaded by hand with `supabase/quiz-content.example.sql` (README).
 - Phase 6 (done, deployed): challenges, created from /host, one active at a time, select players + preset points (DECISIONS 033).
 - Before the party: clean production test data (quiz answers, points, test players, anonymous auth users) and reset `party_state` to lobby. Keep the quiz questions, the `hosts` row and the host's player.
-- Next: show, then leaderboards.
+- Phase 7 (done): final show: sign-up from any phase, host runs one act at a time (start → open voting → close), stars 1–5 (DECISIONS 034).
+- Next: leaderboards.
 - Extra if time allows: avatar builder (e.g. DiceBear) to replace the emoji picker.
 
 ## Reuse before writing new code
@@ -64,7 +65,7 @@ React + TypeScript + Tailwind (Vite), Supabase (Postgres + Realtime + Auth), dep
 ## How to work
 
 - Work in small phases. Before writing code in each phase, propose a plan and wait for approval.
-- Explain decisions to the developer in Catalan, simply and directly. Code, comments, README and commits in English. UI copy is in Catalan.
+- Explain decisions to the developer in Catalan, simply and directly. Code, comments, README and commits in English. UI copy is in Catalan, always with the forms "meua/teua/seua" (and plurals "meues/teues/seues"), never "meva/teva/seva".
 - Log every significant decision and its reasoning in DECISIONS.md (useful for job interviews).
 - When a phase is finished, add a "Fase N" section to `docs/INTERVIEW.md` with that phase's interview explanations, in Catalan, in the same format ("La frase", explanation, optional follow-up question, DECISIONS number).
 - One commit per step, with clear conventional commit messages.
