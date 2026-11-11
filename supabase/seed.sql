@@ -44,6 +44,18 @@ insert into public.quiz_keys (question_id, correct_option_id) values
 insert into public.quiz_number_keys (question_id, value) values
   ('00000000-0000-4000-a000-000000000005', 3);
 
+-- A written-answer question with half-credit spellings and a reveal image (DECISIONS 032).
+insert into public.quiz_questions (id, position, text, kind, time_limit_s) values
+  ('00000000-0000-4000-a000-000000000006', 6, 'Com es diu el seu millor company de vida?', 'text', 25);
+
+insert into public.quiz_text_keys (question_id, position, answer, credit) values
+  ('00000000-0000-4000-a000-000000000006', 1, 'Nuc', 1),
+  ('00000000-0000-4000-a000-000000000006', 2, 'Nuk', 0.5),
+  ('00000000-0000-4000-a000-000000000006', 3, 'Nuck', 0.5);
+
+insert into public.quiz_reveal_images (question_id, image_url) values
+  ('00000000-0000-4000-a000-000000000006', 'https://picsum.photos/seed/nuc/640/480');
+
 insert into public.challenges (id, position, name, emoji, description) values
   ('00000000-0000-4000-c000-000000000001', 1, 'Saltar a corda', '🪢',
    'Qui fa més salts seguits sense ensopegar.'),

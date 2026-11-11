@@ -113,14 +113,14 @@ isOneToOne: false
                   ]
                 },"quiz_answers": {
                   Row: {
-                    "answered_at": string,"number_value": number | null,"option_id": string | null,"option_ids": (string)[] | null,"player_id": string,"question_id": string
+                    "answered_at": string,"number_value": number | null,"option_id": string | null,"option_ids": (string)[] | null,"player_id": string,"question_id": string,"text_value": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "answered_at"?: string,"number_value"?: number | null,"option_id"?: string | null,"option_ids"?: (string)[] | null,"player_id": string,"question_id": string
+                    "answered_at"?: string,"number_value"?: number | null,"option_id"?: string | null,"option_ids"?: (string)[] | null,"player_id": string,"question_id": string,"text_value"?: string | null
                   }
                   Update: {
-                    "answered_at"?: string,"number_value"?: number | null,"option_id"?: string | null,"option_ids"?: (string)[] | null,"player_id"?: string,"question_id"?: string
+                    "answered_at"?: string,"number_value"?: number | null,"option_id"?: string | null,"option_ids"?: (string)[] | null,"player_id"?: string,"question_id"?: string,"text_value"?: string | null
                   }
                   Relationships: [
                     {
@@ -234,6 +234,46 @@ isOneToOne: false
                   }
                   Relationships: [
                     
+                  ]
+                },"quiz_reveal_images": {
+                  Row: {
+                    "image_url": string,"question_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "image_url": string,"question_id": string
+                  }
+                  Update: {
+                    "image_url"?: string,"question_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "quiz_reveal_images_question_id_fkey"
+      columns: ["question_id"]
+isOneToOne: true
+      referencedRelation: "quiz_questions"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"quiz_text_keys": {
+                  Row: {
+                    "answer": string,"credit": number,"position": number,"question_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "answer": string,"credit"?: number,"position": number,"question_id": string
+                  }
+                  Update: {
+                    "answer"?: string,"credit"?: number,"position"?: number,"question_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "quiz_text_keys_question_id_fkey"
+      columns: ["question_id"]
+isOneToOne: false
+      referencedRelation: "quiz_questions"
+      referencedColumns: ["id"]
+    }
                   ]
                 },"scoring_config": {
                   Row: {
@@ -424,6 +464,9 @@ isOneToOne: false
         isOneToOne: true
         isSetofReturn: false
       } },
+"normalize_answer":
+{ Args: { "p_text": string }; Returns: string
+                           },
 "open_question":
 { Args: { "p_question_id": string }; Returns: undefined
                            },
@@ -447,6 +490,9 @@ isOneToOne: false
                            },
 "submit_number_answer":
 { Args: { "p_question_id": string,"p_value": number }; Returns: undefined
+                           },
+"submit_text_answer":
+{ Args: { "p_question_id": string,"p_text": string }; Returns: undefined
                            }
           }
           Enums: {
