@@ -419,7 +419,10 @@ isOneToOne: false
                 }
           }
           Functions: {
-            "assert_can_answer":
+            "act_has_points":
+{ Args: { "p_act_id": string }; Returns: boolean
+                           },
+"assert_can_answer":
 { Args: { "p_kind": string,"p_question_id": string }; Returns: {
               "id": string,
 "image_url": string | null,
@@ -476,6 +479,9 @@ isOneToOne: false
 "open_question":
 { Args: { "p_question_id": string }; Returns: undefined
                            },
+"open_voting":
+{ Args: Record<PropertyKey, never>; Returns: undefined
+                           },
 "player_has_activity":
 { Args: { "p_player_id": string }; Returns: boolean
                            },
@@ -487,6 +493,9 @@ isOneToOne: false
                            },
 "sign_up_act":
 { Args: { "p_member_ids": (string)[],"p_title": string }; Returns: string
+                           },
+"start_act":
+{ Args: { "p_act_id": string }; Returns: undefined
                            },
 "start_challenge":
 { Args: { "p_challenge_id": string }; Returns: undefined
@@ -502,6 +511,9 @@ isOneToOne: false
                            },
 "submit_text_answer":
 { Args: { "p_question_id": string,"p_text": string }; Returns: undefined
+                           },
+"withdraw_act":
+{ Args: { "p_act_id": string }; Returns: undefined
                            }
           }
           Enums: {
