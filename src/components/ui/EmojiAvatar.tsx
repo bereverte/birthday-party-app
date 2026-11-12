@@ -12,8 +12,8 @@ const backgrounds = ['bg-pink-soft', 'bg-sun-soft', 'bg-mint-soft', 'bg-lilac-so
 
 const sizes: Record<Size, string> = {
   sm: 'size-10 text-xl',
-  md: 'size-14 text-3xl',
-  lg: 'size-24 text-6xl',
+  md: 'size-14 text-2xl',
+  lg: 'size-20 text-4xl',
 }
 
 function hash(value: string) {

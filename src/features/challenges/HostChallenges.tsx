@@ -132,7 +132,7 @@ export function HostChallenges({ party, players, refetchParty }: Props) {
   const customValue = Number.parseInt(custom, 10)
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-4">
       {notice && (
         <p role="status" className="animate-pop rounded-2xl bg-sun-soft px-4 py-3 font-semibold shadow-card">
           {notice}
@@ -143,11 +143,11 @@ export function HostChallenges({ party, players, refetchParty }: Props) {
         <Card tone="party" className="flex flex-col gap-3">
           <p className="text-sm font-bold opacity-85">Prova en marxa</p>
           <div className="flex items-center gap-4">
-            <span className="text-6xl" aria-hidden>
+            <span className="text-5xl" aria-hidden>
               {current.emoji}
             </span>
             <div className="min-w-0">
-              <h2 className="text-3xl leading-tight font-bold">{current.name}</h2>
+              <h2 className="text-2xl leading-tight font-bold">{current.name}</h2>
               {current.description && <p className="mt-1">{current.description}</p>}
             </div>
           </div>
@@ -164,13 +164,13 @@ export function HostChallenges({ party, players, refetchParty }: Props) {
         </Card>
       ) : (
         <Card tone="party" className="flex flex-col items-start gap-3">
-          <h2 className="text-3xl font-bold">🏃 Proves</h2>
+          <h2 className="text-2xl font-bold">🏃 Proves</h2>
           {next ? (
             <Button variant="primary" size="lg" loading={busy === `start:${next.id}`} onClick={() => void start(next.id)}>
               ▶️ Començar {next.emoji} {next.name}
             </Button>
           ) : (
-            <p>{list.length === 0 ? 'Encara no hi ha proves. Crea’n una ací baix.' : 'Totes les proves estan fetes 🎉'}</p>
+            <p>{list.length === 0 ? 'Encara no hi ha proves. Crea’n una aquí baix.' : 'Totes les proves estan fetes 🎉'}</p>
           )}
         </Card>
       )}
@@ -178,7 +178,7 @@ export function HostChallenges({ party, players, refetchParty }: Props) {
       {current && (
         <Card className="flex flex-col gap-4">
           <div className="flex items-baseline justify-between gap-2">
-            <h2 className="text-2xl font-bold">Puntuar</h2>
+            <h2 className="text-xl font-bold">Puntuar</h2>
             <p className="text-sm text-ink-soft">Toca qui ha guanyat (o tot l’equip)</p>
           </div>
           <ul className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
@@ -266,10 +266,10 @@ export function HostChallenges({ party, players, refetchParty }: Props) {
         </Card>
       )}
 
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="grid gap-4 lg:grid-cols-2">
         <Card className="flex flex-col gap-3">
           <div className="flex items-center justify-between gap-2">
-            <h2 className="text-2xl font-bold">Llista de proves</h2>
+            <h2 className="text-xl font-bold">Llista de proves</h2>
             {editing === null && (
               <Button variant="ghost" className="px-3! py-1.5! text-sm" onClick={() => setEditing('new')}>
                 + Nova
@@ -293,7 +293,7 @@ export function HostChallenges({ party, players, refetchParty }: Props) {
             <ol className="flex flex-col divide-y divide-line">
               {list.map((c) => (
                 <li key={c.id} className="flex items-center gap-2 py-2">
-                  <span className="text-2xl" aria-hidden>
+                  <span className="text-xl" aria-hidden>
                     {c.emoji}
                   </span>
                   <span className={`min-w-0 flex-1 truncate ${c.id === currentId ? 'font-bold' : ''}`}>{c.name}</span>
@@ -338,8 +338,8 @@ export function HostChallenges({ party, players, refetchParty }: Props) {
           )}
         </Card>
 
-        <section className="flex flex-col gap-3">
-          <h2 className="text-2xl font-bold">Rànquing general</h2>
+        <section className="mt-4 flex flex-col gap-3">
+          <h2 className="text-xl font-bold">Rànquing general</h2>
           {ranking.data ? (
             <Ranking ranks={ranking.data} limit={10} />
           ) : (

@@ -8,10 +8,10 @@ export function NotHost({ email, onRecheck }: { email: string; onRecheck: () => 
   return (
     <Screen className="justify-center">
       <Card className="flex flex-col gap-4">
-        <span className="text-5xl" aria-hidden>
+        <span className="text-4xl" aria-hidden>
           🔒
         </span>
-        <h1 className="text-3xl font-bold">Aquest compte no és d’amfitriona</h1>
+        <h1 className="text-2xl font-bold">Este compte no és d’amfitriona</h1>
         <p>
           Has entrat com a <strong className="break-all">{email}</strong>, però no té permisos per controlar la festa.
         </p>

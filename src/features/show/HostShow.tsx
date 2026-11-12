@@ -124,7 +124,7 @@ export function HostShow({ me, party, players, refetchParty }: Props) {
   )
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-4">
       {notice && (
         <p role="status" className="animate-pop rounded-2xl bg-sun-soft px-4 py-3 font-semibold shadow-card">
           {notice}
@@ -141,7 +141,7 @@ export function HostShow({ me, party, players, refetchParty }: Props) {
             </p>
             <p className="text-sm font-bold">{actKind(onStage.memberIds.length)}</p>
           </div>
-          <h2 className="text-3xl leading-tight font-bold break-words">{onStage.title}</h2>
+          <h2 className="text-2xl leading-tight font-bold break-words">{onStage.title}</h2>
           <div className="self-start rounded-2xl bg-paper px-3 py-2 text-ink">
             <ActMembers memberIds={onStage.memberIds} players={players} />
           </div>
@@ -150,20 +150,20 @@ export function HostShow({ me, party, players, refetchParty }: Props) {
             <dl className="flex flex-wrap gap-x-6 gap-y-1">
               <div>
                 <dt className="text-sm opacity-85">Vots</dt>
-                <dd className="font-display text-3xl font-bold tabular-nums">
+                <dd className="font-display text-2xl font-bold tabular-nums">
                   {votes.data?.count ?? 0} / {voters}
                 </dd>
               </div>
               {votes.data?.average != null && (
                 <div>
                   <dt className="text-sm opacity-85">Mitjana</dt>
-                  <dd className="font-display text-3xl font-bold tabular-nums">⭐ {votes.data.average.toFixed(1)}</dd>
+                  <dd className="font-display text-2xl font-bold tabular-nums">⭐ {votes.data.average.toFixed(1)}</dd>
                 </div>
               )}
               {onStage.status === 'done' && result.data && (
                 <div>
                   <dt className="text-sm opacity-85">Punts per artista</dt>
-                  <dd className="font-display text-3xl font-bold tabular-nums">+{result.data.points}</dd>
+                  <dd className="font-display text-2xl font-bold tabular-nums">+{result.data.points}</dd>
                 </div>
               )}
             </dl>
@@ -185,7 +185,7 @@ export function HostShow({ me, party, players, refetchParty }: Props) {
         </Card>
       ) : (
         <Card tone="party" className="flex flex-col items-start gap-3">
-          <h2 className="text-3xl font-bold">🎤 Show final</h2>
+          <h2 className="text-2xl font-bold">🎤 Show final</h2>
           {startNext ?? (
             <p>{list.length === 0 ? 'Encara no s’ha apuntat ningú.' : 'Totes les actuacions estan fetes 🎉'}</p>
           )}
@@ -194,7 +194,7 @@ export function HostShow({ me, party, players, refetchParty }: Props) {
 
       {onStage?.status === 'voting' && (
         <Card className="flex flex-col items-center gap-2 text-center">
-          <h2 className="text-2xl font-bold">El teu vot</h2>
+          <h2 className="text-xl font-bold">El teu vot</h2>
           {onStage.memberIds.includes(me.id) ? (
             <p className="text-ink-soft">No pots votar la teua actuació 🙈</p>
           ) : (
@@ -203,10 +203,10 @@ export function HostShow({ me, party, players, refetchParty }: Props) {
         </Card>
       )}
 
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="grid gap-4 lg:grid-cols-2">
         <Card className="flex flex-col gap-3">
           <div className="flex items-center justify-between gap-2">
-            <h2 className="text-2xl font-bold">Actuacions</h2>
+            <h2 className="text-xl font-bold">Actuacions</h2>
             {!adding && (
               <Button variant="ghost" className="px-3! py-1.5! text-sm" onClick={() => setAdding(true)}>
                 + La meua
@@ -266,8 +266,8 @@ export function HostShow({ me, party, players, refetchParty }: Props) {
           )}
         </Card>
 
-        <section className="flex flex-col gap-3">
-          <h2 className="text-2xl font-bold">Rànquing general</h2>
+        <section className="mt-4 flex flex-col gap-3">
+          <h2 className="text-xl font-bold">Rànquing general</h2>
           {ranking.data ? (
             <Ranking ranks={ranking.data} limit={10} />
           ) : (

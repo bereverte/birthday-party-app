@@ -66,7 +66,7 @@ React + TypeScript + Tailwind (Vite), Supabase (Postgres + Realtime + Auth), dep
 ## How to work
 
 - Work in small phases. Before writing code in each phase, propose a plan and wait for approval.
-- Explain decisions to the developer in Catalan, simply and directly. Code, comments, README and commits in English. UI copy is in Catalan, always with the forms "meua/teua/seua" (and plurals "meues/teues/seues"), never "meva/teva/seva".
+- Explain decisions to the developer in Catalan, simply and directly. Code, comments, README and commits in English. UI copy is in Catalan with Tortosí forms: "meua/teua/seua" (plurals "meues/teues/seues"), never "meva/teva/seva"; subjunctive in -e ("estigue", "tanque"); "aquí" not "ací"; "sortir" not "eixir"; "obre" not "obri"; "estrella(es)" not "estrela".
 - Log every significant decision and its reasoning in DECISIONS.md (useful for job interviews).
 - When a phase is finished, add a "Fase N" section to `docs/INTERVIEW.md` with that phase's interview explanations, in Catalan, in the same format ("La frase", explanation, optional follow-up question, DECISIONS number).
 - One commit per step, with clear conventional commit messages.

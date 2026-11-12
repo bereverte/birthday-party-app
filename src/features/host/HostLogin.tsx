@@ -30,21 +30,21 @@ export function HostLogin() {
   return (
     <Screen>
       <header className="flex flex-col items-center gap-3 pt-6 text-center">
-        <span className="text-5xl" aria-hidden>
+        <span className="text-4xl" aria-hidden>
           👑
         </span>
-        <h1 className="text-4xl leading-none font-bold">Zona de l’amfitriona</h1>
+        <h1 className="text-3xl leading-none font-bold">Zona de l’amfitriona</h1>
         <p className="text-ink-soft">T’enviarem un enllaç per entrar sense contrasenya.</p>
       </header>
 
       {sentTo ? (
         <Card tone="mint" className="flex flex-col gap-2 text-center">
-          <span className="text-5xl" aria-hidden>
+          <span className="text-4xl" aria-hidden>
             💌
           </span>
-          <p className="font-display text-2xl font-bold">Mira el correu!</p>
+          <p className="font-display text-xl font-bold">Mira el correu!</p>
           <p>
-            Hem enviat l’enllaç a <strong className="break-all">{sentTo}</strong>. Obri’l en aquest mateix dispositiu.
+            Hem enviat l’enllaç a <strong className="break-all">{sentTo}</strong>. Obre’l en este mateix dispositiu.
           </p>
           {import.meta.env.DEV && (
             <p className="text-sm">

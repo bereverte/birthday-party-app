@@ -19,5 +19,5 @@ const tones: Record<Tone, string> = {
 }
 
 export function Card({ tone = 'paper', className = '', ...rest }: Props) {
-  return <div {...rest} className={`rounded-3xl p-5 ${tones[tone]} ${className}`} />
+  return <div {...rest} className={`rounded-3xl p-4 ${tones[tone]} ${className}`} />
 }

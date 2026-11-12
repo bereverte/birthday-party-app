@@ -1,4 +1,3 @@
-import { Card } from '../../components/ui/Card'
 import { EmojiAvatar } from '../../components/ui/EmojiAvatar'
 import { Screen } from '../../components/ui/Screen'
 import { StatusPill } from '../../components/ui/StatusPill'
@@ -26,23 +25,13 @@ export function Lobby({ me, players, online, status }: Props) {
         <EmojiAvatar emoji={me.emoji} seed={me.id} size="lg" />
         <div className="min-w-0">
           <p className="text-ink-soft">Ja ets dins!</p>
-          <h1 className="text-4xl leading-none font-bold break-words">Hola, {me.name}!</h1>
+          <h1 className="text-3xl leading-none font-bold break-words">Hola, {me.name}!</h1>
         </div>
       </header>
 
-      <Card tone="party" className="flex items-center gap-4">
-        <span className="text-5xl" aria-hidden>
-          🎂
-        </span>
-        <div>
-          <p className="font-display text-2xl leading-tight font-bold">La festa està a punt de començar</p>
-          <p className="text-white">No tanques aquesta pàgina: tot passarà ací.</p>
-        </div>
-      </Card>
-
-      <section className="flex flex-col gap-4">
+      <section className="mt-4 flex flex-col gap-4">
         <div className="flex items-baseline justify-between gap-2">
-          <h2 className="text-2xl font-bold">Qui ha vingut</h2>
+          <h2 className="text-xl font-bold">Ja som aquí 🎉</h2>
           <p className="text-sm font-bold text-ink-soft">
             {players.length} dins · {onlineCount} en línia
           </p>

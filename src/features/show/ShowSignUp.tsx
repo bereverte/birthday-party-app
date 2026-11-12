@@ -46,11 +46,11 @@ export function ShowSignUp({ me, players, onClose }: Props) {
       </div>
 
       <Card tone="party" className="flex flex-col gap-2">
-        <span className="text-5xl" aria-hidden>
+        <span className="text-4xl" aria-hidden>
           🎤
         </span>
-        <h1 className="text-4xl leading-tight font-bold">El show final</h1>
-        <p>Canta, balla, conta un acudit… Sol, en parella o en grup. Tothom vota cada actuació amb estreles.</p>
+        <h1 className="text-3xl leading-tight font-bold">El show final</h1>
+        <p>Canta, balla, conta un acudit… Sol, en parella o en grup. Tothom vota cada actuació amb estrelles.</p>
       </Card>
 
       {notice && (
@@ -82,8 +82,8 @@ export function ShowSignUp({ me, players, onClose }: Props) {
       {!!acts.error && !acts.data && <p className="text-ink-soft">{friendlyError(acts.error)}</p>}
 
       {mine.length > 0 && (
-        <section className="flex flex-col gap-3">
-          <h2 className="text-2xl font-bold">Les meues actuacions</h2>
+        <section className="mt-4 flex flex-col gap-3">
+          <h2 className="text-xl font-bold">Les meues actuacions</h2>
           {mine.length > 1 && (
             <p className="-mt-1 text-ink-soft">Pots actuar tant com vulgues: al rànquing compta la teua millor actuació.</p>
           )}

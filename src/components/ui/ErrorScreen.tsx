@@ -12,10 +12,10 @@ export function ErrorScreen({ title = 'Uf, alguna cosa ha fallat', message, onRe
   return (
     <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col justify-center px-4">
       <Card className="flex flex-col items-center gap-4 text-center">
-        <span className="text-6xl" aria-hidden>
+        <span className="text-5xl" aria-hidden>
           🙈
         </span>
-        <h1 className="text-3xl font-bold">{title}</h1>
+        <h1 className="text-2xl font-bold">{title}</h1>
         <p className="text-ink-soft">{message}</p>
         {onRetry && (
           <Button size="lg" onClick={onRetry} loading={retrying} className="w-full">

@@ -29,40 +29,40 @@ export function GuestChallenges({ me, party, status }: Props) {
   return (
     <Screen>
       <div className="flex items-center justify-between gap-3">
-        <p className="font-display text-lg font-bold">🏃 Proves</p>
+        <p className="font-display text-2xl font-bold tracking-tight">🏃 Proves</p>
         <StatusPill status={status} />
       </div>
 
       {current ? (
-        <Card tone="party" className="flex flex-col items-center gap-3 py-8 text-center">
-          <span className="animate-float text-7xl" aria-hidden>
+        <Card tone="party" className="flex flex-col items-center gap-3 py-6 text-center">
+          <span className="animate-float text-6xl" aria-hidden>
             {current.emoji}
           </span>
-          <h1 className="text-4xl font-bold">{current.name}</h1>
+          <h1 className="text-3xl font-bold">{current.name}</h1>
           {current.description && <p className="text-lg">{current.description}</p>}
         </Card>
       ) : (
-        <Card tone="party" className="flex flex-col items-center gap-3 py-8 text-center">
-          <span className="animate-float text-7xl" aria-hidden>
+        <Card tone="party" className="flex flex-col items-center gap-3 py-6 text-center">
+          <span className="animate-float text-6xl" aria-hidden>
             ⏳
           </span>
-          <h1 className="text-4xl font-bold">La següent prova arriba aviat</h1>
+          <h1 className="text-3xl font-bold">La següent prova arriba aviat</h1>
           <p className="text-lg">Fes cas a l’amfitriona i prepara’t.</p>
         </Card>
       )}
 
       {current && myPoints !== undefined && (
         <Card tone="mint" className="animate-pop text-center">
-          <p className="font-display text-2xl font-bold">
-            {myPoints > 0 ? `Has guanyat +${myPoints} punts! 🎉` : 'Puntuat en aquesta prova'}
+          <p className="font-display text-xl font-bold">
+            {myPoints > 0 ? `Has guanyat +${myPoints} punts! 🎉` : 'Puntuat en esta prova'}
           </p>
         </Card>
       )}
 
       {ranking.data && ranking.data.length > 0 && (
-        <section className="flex flex-col gap-3">
+        <section className="mt-4 flex flex-col gap-3">
           <div>
-            <h2 className="text-2xl font-bold">Rànquing general</h2>
+            <h2 className="text-xl font-bold">Rànquing general</h2>
             <p className="text-ink-soft">Quiz + proves + show · el que val per al premi 🏆</p>
           </div>
           <PositionCard ranks={ranking.data} meId={me.id} />

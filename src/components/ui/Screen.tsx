@@ -11,7 +11,7 @@ type Props = {
 export function Screen({ children, wide = false, className = '' }: Props) {
   return (
     <main
-      className={`mx-auto flex min-h-dvh w-full flex-col gap-6 px-4 pt-6 pb-10 ${wide ? 'max-w-5xl' : 'max-w-md'} ${className}`}
+      className={`mx-auto flex min-h-dvh w-full flex-col gap-4 px-4 pt-4 pb-8 ${wide ? 'max-w-5xl' : 'max-w-md'} ${className}`}
     >
       {children}
     </main>

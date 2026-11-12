@@ -43,14 +43,14 @@ export function JoinForm({ userId, onJoined, title = 'Entra a la festa!' }: Prop
   return (
     <Screen>
       <header className="flex flex-col items-center gap-3 pt-4 text-center">
-        <span className="text-5xl" aria-hidden>
+        <span className="text-4xl" aria-hidden>
           🎂
         </span>
-        <h1 className="text-4xl leading-none font-bold">{title}</h1>
+        <h1 className="text-3xl leading-none font-bold">{title}</h1>
         <p className="text-ink-soft">Digues com et diuen i tria el teu emoji.</p>
       </header>
 
-      <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         {/* The name is typed straight into the preview card, next to the avatar. */}
         <Card className="flex items-center gap-4 transition-shadow focus-within:ring-2 focus-within:ring-pink/40">
           <EmojiAvatar key={emoji} emoji={emoji} seed={userId} size="lg" />
@@ -66,7 +66,7 @@ export function JoinForm({ userId, onJoined, title = 'Entra a la festa!' }: Prop
             enterKeyHint="done"
             placeholder="El teu nom"
             required
-            className="min-w-0 flex-1 bg-transparent py-1 font-display text-2xl font-bold outline-none placeholder:text-ink-soft/50"
+            className="min-w-0 flex-1 bg-transparent py-1 font-display text-xl font-bold outline-none placeholder:text-ink-soft/50"
           />
         </Card>
 
@@ -82,7 +82,7 @@ export function JoinForm({ userId, onJoined, title = 'Entra a la festa!' }: Prop
                   onClick={() => setEmoji(option)}
                   aria-pressed={selected}
                   aria-label={option}
-                  className={`aspect-square rounded-2xl text-2xl transition-transform duration-100 active:scale-90 ${
+                  className={`aspect-square rounded-2xl text-xl transition-transform duration-100 active:scale-90 ${
                     selected ? 'scale-105 bg-paper shadow-glow ring-2 ring-pink' : 'bg-paper/60'
                   }`}
                 >

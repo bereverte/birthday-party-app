@@ -20,10 +20,10 @@ export function StarPicker({ value, onChange, disabled = false }: Props) {
               type="button"
               role="radio"
               aria-checked={value === score}
-              aria-label={`${score} ${score === 1 ? 'estrela' : 'estreles'}: ${label}`}
+              aria-label={`${score} ${score === 1 ? 'estrella' : 'estrelles'}: ${label}`}
               disabled={disabled}
               onClick={() => onChange(score)}
-              className={`text-5xl transition-transform duration-100 active:scale-90 disabled:cursor-not-allowed sm:text-6xl ${on ? 'scale-110' : 'opacity-35 grayscale'}`}
+              className={`text-4xl transition-transform duration-100 active:scale-90 disabled:cursor-not-allowed sm:text-5xl ${on ? 'scale-110' : 'opacity-35 grayscale'}`}
             >
               ⭐
             </button>

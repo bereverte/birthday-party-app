@@ -36,7 +36,7 @@ export function GuestShow({ me, players, party, status, onSignUp }: Props) {
   return (
     <Screen>
       <div className="flex items-center justify-between gap-3">
-        <p className="font-display text-lg font-bold">🎤 Show final</p>
+        <p className="font-display text-2xl font-bold tracking-tight">🎤 Show final</p>
         <StatusPill status={status} />
       </div>
 
@@ -61,9 +61,9 @@ export function GuestShow({ me, players, party, status, onSignUp }: Props) {
       )}
 
       {ranking.data && ranking.data.length > 0 && (!onStage || onStage.status === 'done') && (
-        <section className="flex flex-col gap-3">
+        <section className="mt-4 flex flex-col gap-3">
           <div>
-            <h2 className="text-2xl font-bold">Rànquing general</h2>
+            <h2 className="text-xl font-bold">Rànquing general</h2>
             <p className="text-ink-soft">Quiz + proves + show · el que val per al premi 🏆</p>
           </div>
           <PositionCard ranks={ranking.data} meId={me.id} />
@@ -77,16 +77,16 @@ function LineUp({ acts, players }: { acts: ShowAct[]; players: Player[] }) {
   const pending = acts.filter((a) => a.status === 'pending')
   return (
     <>
-      <Card tone="party" className="flex flex-col items-center gap-3 py-8 text-center">
-        <span className="animate-float text-7xl" aria-hidden>
+      <Card tone="party" className="flex flex-col items-center gap-3 py-6 text-center">
+        <span className="animate-float text-6xl" aria-hidden>
           🎤
         </span>
-        <h1 className="text-4xl font-bold">El show comença aviat</h1>
-        <p className="text-lg">Busca un bon lloc i prepara les estreles.</p>
+        <h1 className="text-3xl font-bold">El show comença aviat</h1>
+        <p className="text-lg">Busca un bon lloc i prepara les estrelles.</p>
       </Card>
       {pending.length > 0 && (
-        <section className="flex flex-col gap-3">
-          <h2 className="text-2xl font-bold">Actuacions</h2>
+        <section className="mt-4 flex flex-col gap-3">
+          <h2 className="text-xl font-bold">Actuacions</h2>
           <Card className="flex flex-col divide-y divide-line py-2">
             {pending.map((act) => (
               <div key={act.id} className="flex flex-col gap-2 py-3">
@@ -106,13 +106,13 @@ function LineUp({ acts, players }: { acts: ShowAct[]; players: Player[] }) {
 
 function Performing({ act, players }: { act: ShowAct; players: Player[] }) {
   return (
-    <Card tone="party" className="flex flex-col items-center gap-4 py-8 text-center">
+    <Card tone="party" className="flex flex-col items-center gap-4 py-6 text-center">
       <p className="font-bold opacity-85">Ara a l’escenari</p>
-      <h1 className="text-4xl leading-tight font-bold break-words">{act.title}</h1>
+      <h1 className="text-3xl leading-tight font-bold break-words">{act.title}</h1>
       <div className="rounded-2xl bg-paper px-4 py-3 text-ink">
         <ActMembers memberIds={act.memberIds} players={players} size="md" />
       </div>
-      <p className="text-lg">Gaudeix! La votació s’obri quan acaben 👏</p>
+      <p className="text-lg">Gaudeix! La votació s’obre quan acaben 👏</p>
     </Card>
   )
 }
@@ -144,9 +144,9 @@ function Voting({ act, me }: { act: ShowAct; me: Player }) {
   }
 
   return (
-    <Card tone="party" className="flex flex-col items-center gap-4 py-8 text-center">
+    <Card tone="party" className="flex flex-col items-center gap-4 py-6 text-center">
       <p className="font-bold opacity-85">Votació oberta</p>
-      <h1 className="text-4xl leading-tight font-bold break-words">{act.title}</h1>
+      <h1 className="text-3xl leading-tight font-bold break-words">{act.title}</h1>
       {isMember ? (
         <p className="text-xl font-bold">No pots votar la teua actuació 🙈 Ara voten els altres!</p>
       ) : (
@@ -155,7 +155,7 @@ function Voting({ act, me }: { act: ShowAct; me: Player }) {
             <StarPicker value={value} onChange={(score) => void vote(score)} disabled={sending} />
           </div>
           <p className="text-lg" role="status">
-            {error ?? (saved !== null ? 'Vot enviat ✓ Pots canviar-lo fins que es tanque.' : 'Toca les estreles per votar.')}
+            {error ?? (saved !== null ? 'Vot enviat ✓ Pots canviar-lo fins que es tanque.' : 'Toca les estrelles per votar.')}
           </p>
         </>
       )}
@@ -178,20 +178,20 @@ function Result({
   const isMember = act.memberIds.includes(me.id)
 
   return (
-    <Card tone="party" className="flex animate-pop flex-col items-center gap-3 py-8 text-center">
+    <Card tone="party" className="flex animate-pop flex-col items-center gap-3 py-6 text-center">
       <p className="font-bold opacity-85">Resultat</p>
-      <h1 className="text-3xl leading-tight font-bold break-words">{act.title}</h1>
+      <h1 className="text-2xl leading-tight font-bold break-words">{act.title}</h1>
       <ActMembers memberIds={act.memberIds} players={players} />
       {result.data ? (
         <>
-          <p className="font-display text-6xl font-bold tabular-nums">⭐ {result.data.stars.toFixed(1)}</p>
+          <p className="font-display text-5xl font-bold tabular-nums">⭐ {result.data.stars.toFixed(1)}</p>
           <p className="text-xl font-bold">
             {isMember ? `Has guanyat +${result.data.points} punts! 🎉` : `+${result.data.points} punts per a cada artista`}
           </p>
           {isMember && severalActs && <p>Al rànquing compta la teua millor actuació.</p>}
         </>
       ) : (
-        <p className="text-lg">{result.loading ? 'Comptant estreles…' : 'Sense vots'}</p>
+        <p className="text-lg">{result.loading ? 'Comptant estrelles…' : 'Sense vots'}</p>
       )}
     </Card>
   )

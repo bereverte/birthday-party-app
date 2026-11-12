@@ -23,7 +23,7 @@ export function Podium({ ranks }: { ranks: Rank[] }) {
               </div>
             ))}
             <div
-              className={`flex w-full items-start justify-center rounded-t-3xl bg-paper pt-2 text-3xl shadow-card ${step.height}`}
+              className={`flex w-full items-start justify-center rounded-t-3xl bg-paper pt-2 text-2xl shadow-card ${step.height}`}
             >
               <span aria-hidden>{step.medal}</span>
             </div>

@@ -9,19 +9,18 @@ import type { Player } from '../../hooks/usePlayers'
 import type { RealtimeStatus } from '../../hooks/useRealtimeRefetch'
 import { friendlyError } from '../../lib/errors'
 import { broadcastResync } from '../../lib/partyChannel'
-import { getClockOffset } from '../../lib/serverClock'
 import { supabase } from '../../lib/supabase'
 import { HostChallenges } from '../challenges/HostChallenges'
 import { FinalResults } from '../final/FinalResults'
 import { HostQuiz } from '../quiz/HostQuiz'
 import { HostShow } from '../show/HostShow'
 
-const phaseLabels: Record<Phase, string> = {
-  lobby: '🎈 Lobby',
-  quiz: '🧠 Quiz',
-  challenges: '🏃 Proves',
-  show: '🎤 Show',
-  finished: '🏆 Final',
+const phaseLabels: Record<Phase, { emoji: string; label: string }> = {
+  lobby: { emoji: '🎈', label: 'Inici' },
+  quiz: { emoji: '🧠', label: 'Quiz' },
+  challenges: { emoji: '🏃', label: 'Proves' },
+  show: { emoji: '🎤', label: 'Show' },
+  finished: { emoji: '🏆', label: 'Final' },
 }
 
 type Props = {
@@ -91,8 +90,18 @@ export function HostPanel({ me, party, players, online, status, refetchAll }: Pr
         </div>
         <div className="flex items-center gap-2">
           <StatusPill status={status} />
+          {/* Rescue: every phone re-reads the state. */}
+          <Button
+            variant="ghost"
+            loading={busy === 'resync'}
+            onClick={() => void forceResync()}
+            title="Si algun mòbil s’ha quedat penjat, fes que tots tornen a llegir l’estat"
+            className="!px-3 !py-1.5 text-sm"
+          >
+            🔄 Resync
+          </Button>
           <Button variant="ghost" onClick={() => void supabase.auth.signOut()} className="!px-3 !py-1.5 text-sm">
-            Eixir
+            Sortir
           </Button>
         </div>
       </header>
@@ -109,52 +118,44 @@ export function HostPanel({ me, party, players, online, status, refetchAll }: Pr
       )}
       {party.phase === 'show' && <HostShow me={me} party={party} players={players} refetchParty={refetchAll} />}
       {party.phase === 'finished' && (
-        <div className="mx-auto flex w-full max-w-xl flex-col gap-6">
+        <div className="mx-auto flex w-full max-w-xl flex-col gap-4">
           <FinalResults />
         </div>
       )}
 
-      <div className="grid gap-6 lg:grid-cols-[1fr_1.2fr]">
-        <div className="flex flex-col gap-6">
-          <Card className="flex flex-col gap-4">
-            <h2 className="text-2xl font-bold">Fase</h2>
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-2">
+      <div className="grid gap-4 lg:grid-cols-[1fr_1.2fr]">
+        <div className="flex flex-col gap-4">
+          <Card className="flex flex-col gap-3">
+            <h2 className="text-xl font-bold">Fase</h2>
+            {/* One row of five: a segmented control, no half-empty grid row. */}
+            <div className="grid grid-cols-5 gap-1 rounded-2xl bg-bg-via p-1">
               {PHASES.map((phase) => {
                 const current = party.phase === phase
+                const { emoji, label } = phaseLabels[phase]
                 return (
-                  <Button
+                  <button
                     key={phase}
-                    variant={current ? 'secondary' : 'ghost'}
+                    type="button"
                     aria-pressed={current}
-                    loading={busy === `phase:${phase}`}
-                    disabled={busy !== null && busy !== `phase:${phase}`}
+                    disabled={busy !== null}
                     onClick={() => void changePhase(phase)}
+                    className={`flex min-w-0 flex-col items-center gap-0.5 rounded-xl px-1 py-2 font-display text-xs font-bold transition active:scale-95 disabled:opacity-60 ${current ? 'bg-pink text-white shadow-glow' : 'text-ink-soft'}`}
                   >
-                    {phaseLabels[phase]}
-                  </Button>
+                    <span className="text-lg leading-none" aria-hidden>
+                      {busy === `phase:${phase}` ? '⏳' : emoji}
+                    </span>
+                    <span className="w-full truncate text-center">{label}</span>
+                  </button>
                 )
               })}
             </div>
           </Card>
 
-          <Card tone="lilac" className="flex flex-col gap-3">
-            <h2 className="text-2xl font-bold">Rescat</h2>
-            <p className="text-sm">Si algun mòbil s’ha quedat penjat, fes que tots tornen a llegir l’estat.</p>
-            <Button variant="secondary" loading={busy === 'resync'} onClick={() => void forceResync()}>
-              🔄 Force resync
-            </Button>
-            <dl className="grid grid-cols-2 gap-x-3 gap-y-1 text-sm">
-              <dt className="opacity-75">Realtime</dt>
-              <dd className="font-bold">{status}</dd>
-              <dt className="opacity-75">Rellotge vs servidor</dt>
-              <dd className="font-bold">{getClockOffset()} ms</dd>
-            </dl>
-          </Card>
         </div>
 
         <Card className="flex flex-col gap-4">
           <div className="flex items-baseline justify-between gap-2">
-            <h2 className="text-2xl font-bold">Jugadors</h2>
+            <h2 className="text-xl font-bold">Jugadors</h2>
             <p className="text-sm font-bold text-ink-soft">
               {players.length} dins · {onlineCount} en línia
             </p>
