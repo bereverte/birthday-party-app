@@ -6,7 +6,7 @@ import type { Player } from '../../hooks/usePlayers'
 import { friendlyError } from '../../lib/errors'
 import { supabase } from '../../lib/supabase'
 import { Ranking } from '../leaderboard/Ranking'
-import { usePartyLeaderboard } from '../leaderboard/usePartyLeaderboard'
+import { useLeaderboard } from '../leaderboard/useLeaderboard'
 import { ActMembers } from './ActMembers'
 import { actKind } from './actKind'
 import { actStatusLabels, actStatusTones } from './actStatus'
@@ -28,7 +28,7 @@ type Props = {
 // (DECISIONS 034).
 export function HostShow({ me, party, players, refetchParty }: Props) {
   const acts = useShowActs()
-  const ranking = usePartyLeaderboard()
+  const ranking = useLeaderboard()
   const currentId = party.current_act_id
   // The host sees every vote (RLS), so this is the live count.
   const votes = useActVotes(currentId)
@@ -267,7 +267,7 @@ export function HostShow({ me, party, players, refetchParty }: Props) {
         </Card>
 
         <section className="flex flex-col gap-3">
-          <h2 className="text-2xl font-bold">Rànquing de la festa</h2>
+          <h2 className="text-2xl font-bold">Rànquing general</h2>
           {ranking.data ? (
             <Ranking ranks={ranking.data} limit={10} />
           ) : (

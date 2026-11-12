@@ -9,7 +9,7 @@ import type { RealtimeStatus } from '../../hooks/useRealtimeRefetch'
 import { friendlyError } from '../../lib/errors'
 import { supabase } from '../../lib/supabase'
 import { Ranking } from '../leaderboard/Ranking'
-import { usePartyLeaderboard } from '../leaderboard/usePartyLeaderboard'
+import { useLeaderboard } from '../leaderboard/useLeaderboard'
 import { ActMembers } from './ActMembers'
 import { actKind } from './actKind'
 import { StarPicker } from './StarPicker'
@@ -29,7 +29,7 @@ type Props = {
 // none → line-up, performing → "on stage now", voting → stars, done → result.
 export function GuestShow({ me, players, party, status, onSignUp }: Props) {
   const acts = useShowActs()
-  const ranking = usePartyLeaderboard()
+  const ranking = useLeaderboard()
   const current = acts.data?.find((a) => a.id === party.current_act_id) ?? null
   const onStage = current && current.status !== 'pending' ? current : null
 
@@ -44,7 +44,14 @@ export function GuestShow({ me, players, party, status, onSignUp }: Props) {
 
       {onStage?.status === 'performing' && <Performing act={onStage} players={players} />}
       {onStage?.status === 'voting' && <Voting act={onStage} me={me} />}
-      {onStage?.status === 'done' && <Result act={onStage} me={me} players={players} />}
+      {onStage?.status === 'done' && (
+        <Result
+          act={onStage}
+          me={me}
+          players={players}
+          severalActs={(acts.data?.filter((a) => a.memberIds.includes(me.id)).length ?? 0) > 1}
+        />
+      )}
       {!onStage && acts.data && <LineUp acts={acts.data} players={players} />}
 
       {(!onStage || onStage.status === 'done') && (
@@ -55,7 +62,7 @@ export function GuestShow({ me, players, party, status, onSignUp }: Props) {
 
       {ranking.data && ranking.data.length > 0 && (!onStage || onStage.status === 'done') && (
         <section className="flex flex-col gap-3">
-          <h2 className="text-2xl font-bold">Rànquing de la festa</h2>
+          <h2 className="text-2xl font-bold">Rànquing general</h2>
           <Ranking ranks={ranking.data} meId={me.id} />
         </section>
       )}
@@ -153,7 +160,17 @@ function Voting({ act, me }: { act: ShowAct; me: Player }) {
   )
 }
 
-function Result({ act, me, players }: { act: ShowAct; me: Player; players: Player[] }) {
+function Result({
+  act,
+  me,
+  players,
+  severalActs,
+}: {
+  act: ShowAct
+  me: Player
+  players: Player[]
+  severalActs: boolean
+}) {
   const result = useActResult(act.id)
   const isMember = act.memberIds.includes(me.id)
 
@@ -168,6 +185,7 @@ function Result({ act, me, players }: { act: ShowAct; me: Player; players: Playe
           <p className="text-xl font-bold">
             {isMember ? `Has guanyat +${result.data.points} punts! 🎉` : `+${result.data.points} punts per a cada artista`}
           </p>
+          {isMember && severalActs && <p>Al rànquing compta la teua millor actuació.</p>}
         </>
       ) : (
         <p className="text-lg">{result.loading ? 'Comptant estreles…' : 'Sense vots'}</p>

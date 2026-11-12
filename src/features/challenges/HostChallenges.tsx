@@ -7,7 +7,7 @@ import type { Player } from '../../hooks/usePlayers'
 import { friendlyError } from '../../lib/errors'
 import { supabase } from '../../lib/supabase'
 import { Ranking } from '../leaderboard/Ranking'
-import { usePartyLeaderboard } from '../leaderboard/usePartyLeaderboard'
+import { useLeaderboard } from '../leaderboard/useLeaderboard'
 import { ChallengeForm } from './ChallengeForm'
 import { useChallengePoints } from './useChallengePoints'
 import { useChallengePresets } from './useChallengePresets'
@@ -28,7 +28,7 @@ const statusLabels: Record<string, string> = { pending: 'Pendent', active: 'Ara'
 export function HostChallenges({ party, players, refetchParty }: Props) {
   const challenges = useChallenges()
   const presets = useChallengePresets()
-  const ranking = usePartyLeaderboard()
+  const ranking = useLeaderboard()
   const currentId = party.current_challenge_id
   const points = useChallengePoints(currentId)
 
@@ -339,7 +339,7 @@ export function HostChallenges({ party, players, refetchParty }: Props) {
         </Card>
 
         <section className="flex flex-col gap-3">
-          <h2 className="text-2xl font-bold">Rànquing de la festa</h2>
+          <h2 className="text-2xl font-bold">Rànquing general</h2>
           {ranking.data ? (
             <Ranking ranks={ranking.data} limit={10} />
           ) : (

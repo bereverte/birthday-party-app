@@ -1,5 +1,5 @@
 import { EmojiAvatar } from '../../components/ui/EmojiAvatar'
-import type { Rank } from '../leaderboard/rank'
+import type { Rank } from './rank'
 
 // Top 3 on steps: 2nd · 1st · 3rd. Ties share a step (same rank).
 const steps = [

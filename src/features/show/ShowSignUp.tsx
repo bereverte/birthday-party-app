@@ -84,6 +84,9 @@ export function ShowSignUp({ me, players, onClose }: Props) {
       {mine.length > 0 && (
         <section className="flex flex-col gap-3">
           <h2 className="text-2xl font-bold">Les meues actuacions</h2>
+          {mine.length > 1 && (
+            <p className="-mt-1 text-ink-soft">Pots actuar tant com vulgues: al rànquing compta la teua millor actuació.</p>
+          )}
           {mine.map((act) => (
             <Card key={act.id} className="flex flex-col gap-3">
               <div className="flex items-start justify-between gap-2">

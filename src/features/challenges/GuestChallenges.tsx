@@ -5,7 +5,7 @@ import type { PartyState } from '../../hooks/usePartyState'
 import type { Player } from '../../hooks/usePlayers'
 import type { RealtimeStatus } from '../../hooks/useRealtimeRefetch'
 import { Ranking } from '../leaderboard/Ranking'
-import { usePartyLeaderboard } from '../leaderboard/usePartyLeaderboard'
+import { useLeaderboard } from '../leaderboard/useLeaderboard'
 import { useChallengePoints } from './useChallengePoints'
 import { useChallenges } from './useChallenges'
 
@@ -16,10 +16,10 @@ type Props = {
 }
 
 // The guest's challenge screen: the current challenge (or "next one soon"),
-// my points in it once the host scores me, and the party ranking.
+// my points in it once the host scores me, and the global ranking.
 export function GuestChallenges({ me, party, status }: Props) {
   const challenges = useChallenges()
-  const ranking = usePartyLeaderboard()
+  const ranking = useLeaderboard()
   const currentId = party.current_challenge_id
   const points = useChallengePoints(currentId)
 
@@ -61,7 +61,7 @@ export function GuestChallenges({ me, party, status }: Props) {
 
       {ranking.data && ranking.data.length > 0 && (
         <section className="flex flex-col gap-3">
-          <h2 className="text-2xl font-bold">Rànquing de la festa</h2>
+          <h2 className="text-2xl font-bold">Rànquing general</h2>
           <Ranking ranks={ranking.data} meId={me.id} />
         </section>
       )}

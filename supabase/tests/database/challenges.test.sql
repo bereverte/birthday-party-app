@@ -64,11 +64,10 @@ select results_eq(
   're-awarding overwrites instead of adding'
 );
 
-select results_eq(
-  $$ select total from public.party_leaderboard
+select is_empty(
+  $$ select 1 from public.leaderboard
      where player_id = '11111111-1111-4111-8111-111111111111' $$,
-  $$ values (50) $$,
-  'host appears in the party leaderboard with her challenge points'
+  'host plays challenges but stays out of the global leaderboard'
 );
 
 select * from finish();

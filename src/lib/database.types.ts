@@ -95,7 +95,7 @@ isOneToOne: false
       foreignKeyName: "points_ledger_player_id_fkey"
       columns: ["player_id"]
 isOneToOne: false
-      referencedRelation: "party_leaderboard"
+      referencedRelation: "leaderboard"
       referencedColumns: ["player_id"]
     },{
       foreignKeyName: "points_ledger_player_id_fkey"
@@ -133,7 +133,7 @@ isOneToOne: false
       foreignKeyName: "quiz_answers_player_id_fkey"
       columns: ["player_id"]
 isOneToOne: false
-      referencedRelation: "party_leaderboard"
+      referencedRelation: "leaderboard"
       referencedColumns: ["player_id"]
     },{
       foreignKeyName: "quiz_answers_player_id_fkey"
@@ -311,7 +311,7 @@ isOneToOne: false
       foreignKeyName: "show_act_members_player_id_fkey"
       columns: ["player_id"]
 isOneToOne: false
-      referencedRelation: "party_leaderboard"
+      referencedRelation: "leaderboard"
       referencedColumns: ["player_id"]
     },{
       foreignKeyName: "show_act_members_player_id_fkey"
@@ -343,7 +343,7 @@ isOneToOne: false
       foreignKeyName: "show_acts_created_by_fkey"
       columns: ["created_by"]
 isOneToOne: false
-      referencedRelation: "party_leaderboard"
+      referencedRelation: "leaderboard"
       referencedColumns: ["player_id"]
     },{
       foreignKeyName: "show_acts_created_by_fkey"
@@ -381,7 +381,7 @@ isOneToOne: false
       foreignKeyName: "show_votes_voter_id_fkey"
       columns: ["voter_id"]
 isOneToOne: false
-      referencedRelation: "party_leaderboard"
+      referencedRelation: "leaderboard"
       referencedColumns: ["player_id"]
     },{
       foreignKeyName: "show_votes_voter_id_fkey"
@@ -400,7 +400,7 @@ isOneToOne: false
                 }
           }
           Views: {
-            "party_leaderboard": {
+            "leaderboard": {
                   Row: {
                     "emoji": string,"name": string,"player_id": string,"rank": number | null,"total": number | null
                   }

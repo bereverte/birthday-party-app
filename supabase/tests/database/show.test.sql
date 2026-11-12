@@ -74,14 +74,14 @@ select is(
   'voting again replaces the vote instead of adding one'
 );
 
--- Close: avg(4, 5) = 4.5 * 100 = 450 for each member ---------------------
+-- Close: avg(4, 5) = 4.5 * 300 = 1350 for each member ---------------------
 select public.close_voting((select id from public.show_acts where title = 'Duet'));
 
 select results_eq(
   $$ select player_id, points from public.points_ledger
      where source_type = 'show' order by player_id $$,
-  $$ values ('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'::uuid, 450),
-            ('bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb'::uuid, 450) $$,
+  $$ values ('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'::uuid, 1350),
+            ('bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb'::uuid, 1350) $$,
   'close_voting gives avg * points per star to each member'
 );
 

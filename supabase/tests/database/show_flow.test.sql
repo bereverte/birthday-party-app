@@ -121,8 +121,8 @@ select public.close_voting('00000000-0000-4000-a000-0000000000a2');
 select is(
   (select points from public.points_ledger
    where source_type = 'show' and source_id = '00000000-0000-4000-a000-0000000000a2'),
-  400,
-  'closing scores the act (4 stars * 100)'
+  1200,
+  'closing scores the act (4 stars * 300)'
 );
 
 -- Delete guard -------------------------------------------------------------
