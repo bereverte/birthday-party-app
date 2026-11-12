@@ -358,6 +358,18 @@ El quiz podia donar uns 25.000 punts, i les proves i el show junts uns 1.000. Un
 
 **Pregunta de seguiment:** *Per què no normalitzar cada bloc a percentatges?* → És més just en teoria, però més difícil d'explicar a la festa ("tens 3000 punts" s'entén; "tens un 34%" no). Amb tres números de configuració n'hi havia prou.
 
+### Menys informació al mòbil
+**La frase:** "Provant-ho al mòbil vaig veure que 30 noms després de cada pregunta saturaven, així que cada convidat només veu qui té davant i darrere."
+
+La targeta `PositionCard` mostra tres files: qui et trau punts, tu i qui en treus. La llista sencera només ix al podi del quiz i al final. El quiz ensenya només els punts del quiz, i la resta de pantalles el "Rànquing general", que és el del premi.
+
+### La host decideix quan ix el podi
+**La frase:** "El podi del quiz és una columna a `party_state`, no un estat de React, perquè l'han de veure tots els mòbils alhora."
+
+El primer intent calculava "és l'última pregunta?" al client, però l'RLS amaga als convidats les preguntes que encara no s'han obert, i per això sempre semblava l'última. La solució va ser més simple: la host toca "Mostrar podi a tothom", i això escriu `quiz_podium` amb el mateix permís per columna que `phase`. Qui recarrega la pàgina també veu el podi.
+
+**Pregunta de seguiment:** *Per què no una funció del servidor que diga si és l'última?* → La vaig fer, i funcionava. Però la host volia triar ella el moment del podi, i amb això la funció sobrava. Vaig preferir esborrar-la abans de pujar-la a producció.
+
 ### La fase és la revelació
 **La frase:** "La pantalla final no té cap estat nou: canviar la fase a `finished` ja és el moment de la revelació."
 
@@ -366,5 +378,5 @@ El quiz podia donar uns 25.000 punts, i les proves i el show junts uns 1.000. Un
 ### Com ho he provat
 **La frase:** "La regla nova té tests que la trenquen a propòsit: dos actes del mateix convidat, un empat i l'amfitriona amb punts."
 
-5 tests pgTAP nous (112 en total): suma de les tres fonts, només compta el millor acte, empats amb el mateix rank, convidat sense punts amb 0, i l'amfitriona fora. També vaig actualitzar els tests que tenien els 100 punts per estrela escrits a mà.
+8 tests pgTAP nous (115 en total): suma de les tres fonts, només compta el millor acte, empats amb el mateix rank, convidat sense punts amb 0, l'amfitriona fora, i que només ella pot mostrar el podi del quiz. També vaig actualitzar els tests que tenien els 100 punts per estrela escrits a mà.
 
