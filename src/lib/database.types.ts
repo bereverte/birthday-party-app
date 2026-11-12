@@ -460,6 +460,9 @@ isOneToOne: false
 "is_host":
 { Args: Record<PropertyKey, never>; Returns: boolean
                            },
+"is_last_question":
+{ Args: { "p_question_id": string }; Returns: boolean
+                           },
 "join_party":
 { Args: { "p_emoji": string,"p_name": string }; Returns: {
               "created_at": string,
