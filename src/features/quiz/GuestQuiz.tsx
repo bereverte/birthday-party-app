@@ -12,6 +12,7 @@ import { supabase } from '../../lib/supabase'
 import { CountdownBadge } from './CountdownBadge'
 import { NumberPicker } from './NumberPicker'
 import { optionStyle } from './optionStyles'
+import { Podium } from '../leaderboard/Podium'
 import { Ranking } from '../leaderboard/Ranking'
 import { multiFraction, textCredit } from './scoring'
 import { useAutoCloseQuestion } from './useAutoCloseQuestion'
@@ -234,7 +235,18 @@ export function GuestQuiz({ me, party, status, refetchParty }: Props) {
 
       {!revealed && <StatusLine kind={kind} answered={answered} timeUp={timeUp} />}
 
-      {revealed && ranking.data && (
+      {revealed && ranking.data && data.isLast && (
+        <section className="flex flex-col gap-4">
+          <div>
+            <h2 className="text-2xl font-bold">🏁 Podi del quiz</h2>
+            <p className="text-ink-soft">Aquests punts compten per al rànquing final 🏆</p>
+          </div>
+          <Podium ranks={ranking.data} />
+          <Ranking ranks={ranking.data} meId={me.id} />
+        </section>
+      )}
+
+      {revealed && ranking.data && !data.isLast && (
         <section className="flex flex-col gap-3">
           <h2 className="text-2xl font-bold">Rànquing</h2>
           <Ranking ranks={ranking.data} meId={me.id} />

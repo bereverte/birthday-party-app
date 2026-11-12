@@ -18,6 +18,8 @@ export type CurrentQuestion = {
   textKeys: TextKey[]
   // A picture shown only at the reveal (DECISIONS 032).
   revealImageUrl: string | null
+  // No question after this one: the guest reveal shows the quiz podium.
+  isLast: boolean
 }
 
 // True once the answer has arrived: the reveal screen waits for it, so it
@@ -68,6 +70,12 @@ export function useCurrentQuestion(party: PartyState | undefined) {
       if (numberKey.error) throw numberKey.error
       if (textKeys.error) throw textKeys.error
       if (revealImage.error) throw revealImage.error
+      const later = await supabase
+        .from('quiz_questions')
+        .select('id')
+        .gt('position', question.data.position)
+        .limit(1)
+      if (later.error) throw later.error
       return {
         question: { ...question.data, kind: question.data.kind as QuestionKind },
         options: options.data,
@@ -75,6 +83,7 @@ export function useCurrentQuestion(party: PartyState | undefined) {
         correctNumber: numberKey.data?.value ?? null,
         textKeys: textKeys.data.map((r) => ({ answer: r.answer, credit: Number(r.credit) })),
         revealImageUrl: revealImage.data?.image_url ?? null,
+        isLast: later.data.length === 0,
       }
     },
   })
