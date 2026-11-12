@@ -266,7 +266,8 @@ export function HostChallenges({ party, players, refetchParty }: Props) {
         </Card>
       )}
 
-      <div className="grid gap-4 lg:grid-cols-2">
+      {/* grid-cols-1 = minmax(0, 1fr): long truncated names can't push the column wider than the screen. */}
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <Card className="flex flex-col gap-3">
           <div className="flex items-center justify-between gap-2">
             <h2 className="text-xl font-bold">Llista de proves</h2>

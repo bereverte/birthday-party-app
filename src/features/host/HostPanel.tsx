@@ -88,20 +88,18 @@ export function HostPanel({ me, party, players, online, status, refetchAll }: Pr
             <h1 className="text-3xl leading-none font-bold">Control de la festa</h1>
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="ml-auto flex items-center gap-2">
           <StatusPill status={status} />
-          {/* Rescue: every phone re-reads the state. */}
+          {/* Rescue: every phone re-reads the state. Icon-only, same height as the pill. */}
           <Button
             variant="ghost"
             loading={busy === 'resync'}
             onClick={() => void forceResync()}
             title="Si algun mòbil s’ha quedat penjat, fes que tots tornen a llegir l’estat"
-            className="!px-3 !py-1.5 text-sm"
+            aria-label="Resync: tots els mòbils tornen a llegir l’estat"
+            className="size-7! p-0! text-sm"
           >
-            🔄 Resync
-          </Button>
-          <Button variant="ghost" onClick={() => void supabase.auth.signOut()} className="!px-3 !py-1.5 text-sm">
-            Sortir
+            🔄
           </Button>
         </div>
       </header>
@@ -123,7 +121,7 @@ export function HostPanel({ me, party, players, online, status, refetchAll }: Pr
         </div>
       )}
 
-      <div className="grid gap-4 lg:grid-cols-[1fr_1.2fr]">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_1.2fr]">
         <div className="flex flex-col gap-4">
           <Card className="flex flex-col gap-3">
             <h2 className="text-xl font-bold">Fase</h2>
@@ -187,6 +185,13 @@ export function HostPanel({ me, party, players, online, status, refetchAll }: Pr
             </ul>
           )}
         </Card>
+      </div>
+
+      {/* Rarely needed, so it lives at the bottom, out of the way. */}
+      <div className="flex justify-center">
+        <Button variant="ghost" onClick={() => void supabase.auth.signOut()} className="px-3! py-1.5! text-sm">
+          Sortir
+        </Button>
       </div>
     </Screen>
   )

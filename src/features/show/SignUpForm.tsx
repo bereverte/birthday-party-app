@@ -53,6 +53,7 @@ export function SignUpForm({ me, players, onDone }: Props) {
           maxLength={60}
           required
           placeholder="Un ball sorpresa"
+          className="text-base!"
           onChange={(e) => setTitle(e.target.value)}
         />
         {others.length > 0 && (
