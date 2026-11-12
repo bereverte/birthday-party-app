@@ -35,14 +35,14 @@ export type Database = {
                   ]
                 },"party_state": {
                   Row: {
-                    "current_act_id": string | null,"current_challenge_id": string | null,"current_question_id": string | null,"id": number,"phase": string,"question_closes_at": string | null,"question_opened_at": string | null,"question_status": string,"updated_at": string
+                    "current_act_id": string | null,"current_challenge_id": string | null,"current_question_id": string | null,"id": number,"phase": string,"question_closes_at": string | null,"question_opened_at": string | null,"question_status": string,"quiz_podium": boolean,"updated_at": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "current_act_id"?: string | null,"current_challenge_id"?: string | null,"current_question_id"?: string | null,"id"?: number,"phase"?: string,"question_closes_at"?: string | null,"question_opened_at"?: string | null,"question_status"?: string,"updated_at"?: string
+                    "current_act_id"?: string | null,"current_challenge_id"?: string | null,"current_question_id"?: string | null,"id"?: number,"phase"?: string,"question_closes_at"?: string | null,"question_opened_at"?: string | null,"question_status"?: string,"quiz_podium"?: boolean,"updated_at"?: string
                   }
                   Update: {
-                    "current_act_id"?: string | null,"current_challenge_id"?: string | null,"current_question_id"?: string | null,"id"?: number,"phase"?: string,"question_closes_at"?: string | null,"question_opened_at"?: string | null,"question_status"?: string,"updated_at"?: string
+                    "current_act_id"?: string | null,"current_challenge_id"?: string | null,"current_question_id"?: string | null,"id"?: number,"phase"?: string,"question_closes_at"?: string | null,"question_opened_at"?: string | null,"question_status"?: string,"quiz_podium"?: boolean,"updated_at"?: string
                   }
                   Relationships: [
                     {
@@ -459,9 +459,6 @@ isOneToOne: false
                            },
 "is_host":
 { Args: Record<PropertyKey, never>; Returns: boolean
-                           },
-"is_last_question":
-{ Args: { "p_question_id": string }; Returns: boolean
                            },
 "join_party":
 { Args: { "p_emoji": string,"p_name": string }; Returns: {

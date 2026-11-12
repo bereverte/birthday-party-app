@@ -38,7 +38,6 @@ export function HostQuiz({ party, players, refetchParty }: Props) {
 
   const [busy, setBusy] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
-  const [showPodium, setShowPodium] = useState(false)
 
   async function rpc(key: string, call: () => PromiseLike<{ error: unknown }>) {
     setBusy(key)
@@ -49,8 +48,12 @@ export function HostQuiz({ party, players, refetchParty }: Props) {
     refetchParty()
   }
 
+  const setQuizPodium = (on: boolean) =>
+    rpc('podium', () => supabase.from('party_state').update({ quiz_podium: on }).eq('id', 1))
   const openQuestion = (id: string) => {
-    setShowPodium(false)
+    // Opening a question already hides the podium on the phones; reset the flag
+    // so it doesn't come back at that question's reveal.
+    if (party.quiz_podium) void supabase.from('party_state').update({ quiz_podium: false }).eq('id', 1)
     void rpc(`open:${id}`, () => supabase.rpc('open_question', { p_question_id: id }))
   }
   const closeNow = () => void rpc('close', () => supabase.rpc('close_question'))
@@ -68,6 +71,8 @@ export function HostQuiz({ party, players, refetchParty }: Props) {
   const index = list.findIndex((q) => q.id === questionId)
   const current = index >= 0 ? list[index] : null
   const next = list[index + 1] ?? null
+  const lastRevealed = status === 'revealed' && !!current && !next
+  const podiumOn = party.quiz_podium && status === 'revealed'
   const guests = players.filter((p) => !p.isHost).length
 
   if (list.length === 0) {
@@ -82,7 +87,7 @@ export function HostQuiz({ party, players, refetchParty }: Props) {
     <div className="flex flex-col gap-4">
       <Card className="flex flex-col gap-5">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <h2 className="text-2xl font-bold">
+          <h2 className="text-xl font-bold">
             🧠 Quiz
             {current && (
               <span className="text-ink-soft">
@@ -96,7 +101,7 @@ export function HostQuiz({ party, players, refetchParty }: Props) {
 
         {!current && (
           <p className="text-ink-soft">
-            {list.length} preguntes a punt. Quan tothom estiga dins, obri la primera.
+            {list.length} preguntes a punt. Quan tothom estigue dins, obre la primera.
           </p>
         )}
 
@@ -111,14 +116,14 @@ export function HostQuiz({ party, players, refetchParty }: Props) {
                     : `🔢 Tria un número del 0 al ${current.number_max}`}
               </p>
             )}
-            <p className="font-display text-3xl leading-tight font-bold break-words">{current.text}</p>
+            <p className="font-display text-2xl leading-tight font-bold break-words">{current.text}</p>
             {current.image_url && (
               <img src={current.image_url} alt="" className="max-h-72 w-full rounded-3xl object-cover shadow-card" />
             )}
             {current.kind === 'text' && status === 'revealed' && (
               <div className="flex animate-pop flex-col items-center gap-1 rounded-3xl bg-mint-soft px-4 py-5 text-center shadow-card">
                 <p className="font-bold text-ink-soft">La resposta era</p>
-                <p className="font-display text-5xl leading-none font-bold break-words">
+                <p className="font-display text-4xl leading-none font-bold break-words">
                   {mainTextAnswer(current.textKeys)}
                 </p>
                 {current.textKeys.some((k) => k.credit < 1) && (
@@ -134,7 +139,7 @@ export function HostQuiz({ party, players, refetchParty }: Props) {
             {current.kind === 'number' && status === 'revealed' && (
               <div className="flex animate-pop flex-col items-center gap-1 rounded-3xl bg-mint-soft py-5 shadow-card">
                 <p className="font-bold text-ink-soft">La resposta era</p>
-                <p className="font-display text-7xl leading-none font-bold tabular-nums">{current.correctNumber}</p>
+                <p className="font-display text-6xl leading-none font-bold tabular-nums">{current.correctNumber}</p>
               </div>
             )}
             <div className="grid gap-3 sm:grid-cols-2">
@@ -183,30 +188,33 @@ export function HostQuiz({ party, players, refetchParty }: Props) {
               👀 Revelar resposta
             </Button>
           )}
+          {lastRevealed && !podiumOn && (
+            <Button size="lg" variant="secondary" loading={busy === 'podium'} onClick={() => void setQuizPodium(true)}>
+              🏁 Mostrar podi a tothom
+            </Button>
+          )}
           {status === 'revealed' && next && (
             <Button size="lg" variant="secondary" loading={busy === `open:${next.id}`} onClick={() => openQuestion(next.id)}>
               ▶️ Següent pregunta
             </Button>
           )}
-          {status === 'revealed' && current && !next && !showPodium && (
-            <Button size="lg" variant="secondary" onClick={() => setShowPodium(true)}>
-              🏁 Mostrar podi del quiz
-            </Button>
-          )}
         </div>
       </Card>
 
-      {showPodium && ranking.data && (
+      {podiumOn && ranking.data && (
         <Card tone="party" className="flex flex-col gap-5">
-          <h2 className="text-center text-3xl font-bold">🏁 Podi del quiz</h2>
+          <div className="text-center">
+            <h2 className="text-2xl font-bold">🏁 Podi del quiz</h2>
+            <p>Ara el veuen tots als mòbils. Quan vulgues, passa a 🏃 Proves.</p>
+          </div>
           <Podium ranks={ranking.data} />
         </Card>
       )}
 
-      {status === 'revealed' && !showPodium && ranking.data && (
-        <section className="flex flex-col gap-3">
-          <h2 className="text-2xl font-bold">Rànquing del quiz</h2>
-          <Ranking ranks={ranking.data} />
+      {status === 'revealed' && ranking.data && (
+        <section className="mt-4 flex flex-col gap-3">
+          <h2 className="text-xl font-bold">Rànquing del quiz</h2>
+          <Ranking ranks={ranking.data} limit={podiumOn ? ranking.data.length : 5} />
         </section>
       )}
 
@@ -214,7 +222,7 @@ export function HostQuiz({ party, players, refetchParty }: Props) {
       <details className="rounded-3xl bg-paper p-4 shadow-card">
         <summary className="cursor-pointer font-bold">🛟 Rescat: saltar a una pregunta</summary>
         <p className="mt-2 text-sm text-ink-soft">
-          Només si alguna cosa ha eixit malament. Qui ja ha respost una pregunta no la pot tornar a respondre.
+          Només si alguna cosa ha sortit malament. Qui ja ha respost una pregunta no la pot tornar a respondre.
         </p>
         <ol className="mt-3 flex flex-col divide-y divide-line">
           {list.map((q, i) => (

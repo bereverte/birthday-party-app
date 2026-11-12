@@ -19,7 +19,7 @@ export function NumberPicker({ value, max, onChange, disabled = false }: Props) 
       </StepButton>
       <span
         aria-live="polite"
-        className="w-28 text-center font-display text-7xl leading-none font-bold tabular-nums"
+        className="w-28 text-center font-display text-6xl leading-none font-bold tabular-nums"
       >
         {value}
       </span>
@@ -92,7 +92,7 @@ function StepButton({
       onClick={(e) => {
         if (e.detail === 0) bump()
       }}
-      className="inline-flex size-20 shrink-0 touch-manipulation items-center justify-center rounded-full bg-paper font-display text-5xl font-bold shadow-card select-none active:scale-95 disabled:opacity-35 disabled:active:scale-100"
+      className="inline-flex size-20 shrink-0 touch-manipulation items-center justify-center rounded-full bg-paper font-display text-4xl font-bold shadow-card select-none active:scale-95 disabled:opacity-35 disabled:active:scale-100"
     >
       {children}
     </button>

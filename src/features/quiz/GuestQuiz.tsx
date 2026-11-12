@@ -56,10 +56,36 @@ export function GuestQuiz({ me, party, status, refetchParty }: Props) {
 
   const header = (
     <div className="flex items-center justify-between gap-3">
-      <p className="font-display text-lg font-bold">🧠 Quiz</p>
+      <p className="font-display text-2xl font-bold tracking-tight">🧠 Quiz</p>
       <StatusPill status={status} />
     </div>
   )
+
+  // The host showed the quiz podium: it replaces the question on every phone
+  // until another question is opened.
+  if (party.quiz_podium && party.question_status === 'revealed') {
+    return (
+      <Screen>
+        {header}
+        <section className="flex flex-col gap-6">
+          <div className="text-center">
+            <h1 className="text-3xl font-bold">🏁 Rànquing del quiz</h1>
+            <p className="text-ink-soft">Estos punts se sumen a les proves i al show per al rànquing general 🏆</p>
+          </div>
+          {ranking.data ? (
+            <>
+              <div className="mt-4">
+                <Podium ranks={ranking.data} />
+              </div>
+              <Ranking ranks={ranking.data} limit={ranking.data.length} meId={me.id} />
+            </>
+          ) : (
+            <p className="text-center text-ink-soft">{ranking.error ? friendlyError(ranking.error) : 'Comptant punts…'}</p>
+          )}
+        </section>
+      </Screen>
+    )
+  }
 
   // No question opened yet (or the host went back to idle).
   if (party.question_status === 'idle' || !party.current_question_id) {
@@ -67,11 +93,11 @@ export function GuestQuiz({ me, party, status, refetchParty }: Props) {
       <Screen>
         {header}
         <div className="flex flex-1 flex-col justify-center pb-16">
-          <Card tone="party" className="flex flex-col items-center gap-3 py-10 text-center">
-            <span className="animate-float text-7xl" aria-hidden>
+          <Card tone="party" className="flex flex-col items-center gap-3 py-8 text-center">
+            <span className="animate-float text-6xl" aria-hidden>
               🧠
             </span>
-            <h1 className="text-4xl font-bold">Comença el quiz!</h1>
+            <h1 className="text-3xl font-bold">Comença el quiz!</h1>
             <p className="text-lg">Quant saps de l’amfitriona? La primera pregunta arriba de seguida.</p>
           </Card>
         </div>
@@ -148,7 +174,7 @@ export function GuestQuiz({ me, party, status, refetchParty }: Props) {
       <div className="flex items-start gap-3">
         <div className="min-w-0 flex-1">
           <p className="text-sm font-bold text-ink-soft">Pregunta {data.question.position}</p>
-          <h1 className="text-3xl leading-tight font-bold break-words">{data.question.text}</h1>
+          <h1 className="text-2xl leading-tight font-bold break-words">{data.question.text}</h1>
         </div>
         {open && <CountdownBadge seconds={seconds} />}
       </div>
@@ -192,7 +218,7 @@ export function GuestQuiz({ me, party, status, refetchParty }: Props) {
             autoCorrect="off"
             spellCheck={false}
             enterKeyHint="send"
-            placeholder="Escriu-la ací"
+            placeholder="Escriu-la aquí"
           />
         </form>
       ) : kind === 'number' ? (
@@ -236,20 +262,9 @@ export function GuestQuiz({ me, party, status, refetchParty }: Props) {
 
       {!revealed && <StatusLine kind={kind} answered={answered} timeUp={timeUp} />}
 
-      {revealed && ranking.data && data.isLast && (
-        <section className="flex flex-col gap-4">
-          <div>
-            <h2 className="text-2xl font-bold">🏁 Rànquing del quiz</h2>
-            <p className="text-ink-soft">Aquests punts se sumen a les proves i al show per al rànquing general 🏆</p>
-          </div>
-          <Podium ranks={ranking.data} />
-          <Ranking ranks={ranking.data} limit={ranking.data.length} meId={me.id} />
-        </section>
-      )}
-
-      {revealed && ranking.data && !data.isLast && (
-        <section className="flex flex-col gap-3">
-          <h2 className="text-2xl font-bold">Rànquing del quiz</h2>
+      {revealed && ranking.data && (
+        <section className="mt-4 flex flex-col gap-3">
+          <h2 className="text-xl font-bold">Rànquing del quiz</h2>
           <PositionCard ranks={ranking.data} meId={me.id} />
         </section>
       )}
@@ -347,7 +362,7 @@ function RevealCard({
   let result: { emoji: string; title: string; text: string | null; tone: 'party' | 'sun' | 'paper' }
 
   if (!answered) {
-    result = { emoji: '⏰', title: 'No has respost', text: 'A la pròxima, més ràpid!', tone: 'paper' }
+    result = { emoji: '⏰', title: 'No has respost', text: null, tone: 'paper' }
   } else if (kind === 'number') {
     const diff = Math.abs((numberValue ?? 0) - (data.correctNumber ?? 0))
     const close = diff > 0 && diff <= data.question.number_tolerance
@@ -358,10 +373,10 @@ function RevealCard({
           ? {
               emoji: '🤏',
               title: `Per un pèl! Era ${data.correctNumber}`,
-              text: `Has dit ${numberValue}. ${pointsText ?? ''}`.trim(),
+              text: pointsText,
               tone: 'sun',
             }
-          : { emoji: '🙈', title: `Era ${data.correctNumber}`, text: `Has dit ${numberValue}.`, tone: 'paper' }
+          : { emoji: '🙈', title: `Era ${data.correctNumber}`, text: null, tone: 'paper' }
   } else if (kind === 'text') {
     const credit = textCredit(data.textKeys, textValue ?? '')
     const main = mainTextAnswer(data.textKeys)
@@ -370,7 +385,7 @@ function RevealCard({
         ? { emoji: '🎉', title: `Correcte! Era ${main}`, text: pointsText, tone: 'party' }
         : credit > 0
           ? { emoji: '🤏', title: `Quasi! Era ${main}`, text: pointsText ? `${pointsText} (la meitat)` : null, tone: 'sun' }
-          : { emoji: '🙈', title: `Era ${main}`, text: `Has escrit “${textValue}”.`, tone: 'paper' }
+          : { emoji: '🙈', title: `Era ${main}`, text: null, tone: 'paper' }
   } else if (kind === 'multi') {
     const f = multiFraction(data, optionIds)
     result =
@@ -378,22 +393,22 @@ function RevealCard({
         ? { emoji: '🎉', title: 'Totes bé!', text: pointsText, tone: 'party' }
         : f > 0
           ? { emoji: '👌', title: 'Gairebé!', text: pointsText, tone: 'sun' }
-          : { emoji: '🙈', title: 'Uf, aquesta no ha sumat', text: 'Si marques una falsa, no puntua.', tone: 'paper' }
+          : { emoji: '🙈', title: 'No ha sumat', text: null, tone: 'paper' }
   } else {
     const right = data.correctOptionIds.includes(optionIds[0])
     result = right
       ? { emoji: '🎉', title: 'Correcte!', text: pointsText, tone: 'party' }
-      : { emoji: '🙈', title: 'Uf, no era aquesta', text: 'La pròxima segur que sí.', tone: 'paper' }
+      : { emoji: '🙈', title: 'No era esta', text: null, tone: 'paper' }
   }
 
   const loud = result.tone === 'party'
   return (
     <Card tone={result.tone} className="flex animate-pop items-center gap-4">
-      <span className="text-5xl" aria-hidden>
+      <span className="text-4xl" aria-hidden>
         {result.emoji}
       </span>
       <div>
-        <p className="font-display text-2xl leading-tight font-bold">{result.title}</p>
+        <p className="font-display text-xl leading-tight font-bold">{result.title}</p>
         {result.text !== null && (
           <p className={loud ? 'text-white' : 'text-ink-soft'}>{result.text || 'Sumant punts…'}</p>
         )}
