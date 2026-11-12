@@ -61,7 +61,10 @@ export function GuestChallenges({ me, party, status }: Props) {
 
       {ranking.data && ranking.data.length > 0 && (
         <section className="flex flex-col gap-3">
-          <h2 className="text-2xl font-bold">Rànquing general</h2>
+          <div>
+            <h2 className="text-2xl font-bold">Rànquing general</h2>
+            <p className="text-ink-soft">Quiz + proves + show · el que val per al premi 🏆</p>
+          </div>
           <PositionCard ranks={ranking.data} meId={me.id} />
         </section>
       )}

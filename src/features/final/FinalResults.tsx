@@ -53,7 +53,10 @@ export function FinalResults({ meId }: { meId?: string }) {
       {ranks.length > 1 && <Podium ranks={ranks} />}
 
       <section className="flex flex-col gap-3">
-        <h2 className="text-2xl font-bold">Rànquing final</h2>
+        <div>
+          <h2 className="text-2xl font-bold">Rànquing final</h2>
+          <p className="text-ink-soft">Quiz + proves + show</p>
+        </div>
         <Ranking ranks={ranks} limit={ranks.length} meId={meId} />
       </section>
 

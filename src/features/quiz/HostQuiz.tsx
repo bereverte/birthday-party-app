@@ -190,7 +190,7 @@ export function HostQuiz({ party, players, refetchParty }: Props) {
           )}
           {status === 'revealed' && current && !next && !showPodium && (
             <Button size="lg" variant="secondary" onClick={() => setShowPodium(true)}>
-              🏆 Mostrar guanyadors
+              🏁 Mostrar podi del quiz
             </Button>
           )}
         </div>
@@ -198,14 +198,14 @@ export function HostQuiz({ party, players, refetchParty }: Props) {
 
       {showPodium && ranking.data && (
         <Card tone="party" className="flex flex-col gap-5">
-          <h2 className="text-center text-3xl font-bold">🏆 Guanyadors del quiz</h2>
+          <h2 className="text-center text-3xl font-bold">🏁 Podi del quiz</h2>
           <Podium ranks={ranking.data} />
         </Card>
       )}
 
       {status === 'revealed' && !showPodium && ranking.data && (
         <section className="flex flex-col gap-3">
-          <h2 className="text-2xl font-bold">Rànquing</h2>
+          <h2 className="text-2xl font-bold">Rànquing del quiz</h2>
           <Ranking ranks={ranking.data} />
         </section>
       )}
