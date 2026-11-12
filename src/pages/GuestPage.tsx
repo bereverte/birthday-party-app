@@ -2,9 +2,9 @@ import { useEffect, useState, type ReactNode } from 'react'
 import { ErrorScreen } from '../components/ui/ErrorScreen'
 import { LoadingScreen } from '../components/ui/LoadingScreen'
 import { GuestChallenges } from '../features/challenges/GuestChallenges'
+import { GuestFinal } from '../features/final/GuestFinal'
 import { JoinForm } from '../features/join/JoinForm'
 import { Lobby } from '../features/join/Lobby'
-import { PhasePlaceholder } from '../features/join/PhasePlaceholder'
 import { useGuestSession } from '../features/join/useGuestSession'
 import { GuestQuiz } from '../features/quiz/GuestQuiz'
 import { GuestShow } from '../features/show/GuestShow'
@@ -108,5 +108,5 @@ export default function GuestPage() {
       />
     )
   }
-  return <PhasePlaceholder phase={phase} status={party.status} />
+  return <GuestFinal me={me} status={party.status} />
 }

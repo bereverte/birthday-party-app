@@ -12,6 +12,7 @@ import { broadcastResync } from '../../lib/partyChannel'
 import { getClockOffset } from '../../lib/serverClock'
 import { supabase } from '../../lib/supabase'
 import { HostChallenges } from '../challenges/HostChallenges'
+import { FinalResults } from '../final/FinalResults'
 import { HostQuiz } from '../quiz/HostQuiz'
 import { HostShow } from '../show/HostShow'
 
@@ -107,6 +108,11 @@ export function HostPanel({ me, party, players, online, status, refetchAll }: Pr
         <HostChallenges party={party} players={players} refetchParty={refetchAll} />
       )}
       {party.phase === 'show' && <HostShow me={me} party={party} players={players} refetchParty={refetchAll} />}
+      {party.phase === 'finished' && (
+        <div className="mx-auto flex w-full max-w-xl flex-col gap-6">
+          <FinalResults />
+        </div>
+      )}
 
       <div className="grid gap-6 lg:grid-cols-[1fr_1.2fr]">
         <div className="flex flex-col gap-6">
