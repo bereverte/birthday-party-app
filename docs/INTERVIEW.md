@@ -341,3 +341,30 @@ L'amfitriona veu el comptador de vots en directe (5 / 28). Els convidats escolte
 **La frase:** "Cada regla nova té un test, i el flux sencer l'he provat contra l'API real amb tres usuaris."
 
 16 tests pgTAP nous (107 en total): només l'amfitriona i només en la fase show, una sola actuació a l'escenari, no es pot canviar mentre es vota, no es pot votar mentre s'actua, retirar només la teua i només si està pendent, i l'esborrat bloquejat amb punts. A més, un script amb `supabase-js` va jugar una actuació sencera amb tres sessions anònimes (amfitriona + dos convidats) contra el Supabase local, per comprovar l'RLS dels vots i la consulta dels membres tal com la fa el frontend.
+
+## Fase 8 — Rànquing únic i pantalla final
+
+### Un sol rànquing, i les regles a la vista (035)
+**La frase:** "Vaig canviar dos rànquings per un de sol sense tocar cap funció de puntuació: només vaig canviar la vista."
+
+Els punts ja estaven en un sol ledger. Per tant, passar de dos premis a un va ser esborrar `party_leaderboard` i crear `leaderboard`, que suma el quiz i les proves i agafa el màxim del show. Les funcions que donen punts no han canviat. Això és el que la decisió 003 prometia: "un rànquing nou és només una vista nova".
+
+**Pregunta de seguiment:** *Per què "només la millor actuació" a la vista i no a l'hora de donar els punts?* → Perquè el ledger ha de dir la veritat: eixe acte va traure 1200 punts. Quins compten és una regla del joc, i si la canviem és una línia a la vista, no reescriure punts ja donats.
+
+### Equilibrar abans de sumar (035)
+**La frase:** "Abans de sumar tres jocs diferents vaig comprovar les escales, i una d'elles en valia 25 vegades més."
+
+El quiz podia donar uns 25.000 punts, i les proves i el show junts uns 1.000. Un total sense canviar res hauria sigut el rànquing del quiz. Ho vaig arreglar amb dades, no amb codi: una migració canvia `scoring_config` (proves 3000/2000/1000/500, show 300 per estrela). El show pesa menys perquè és voluntari, i qui no actua no ha de quedar molt enrere.
+
+**Pregunta de seguiment:** *Per què no normalitzar cada bloc a percentatges?* → És més just en teoria, però més difícil d'explicar a la festa ("tens 3000 punts" s'entén; "tens un 34%" no). Amb tres números de configuració n'hi havia prou.
+
+### La fase és la revelació
+**La frase:** "La pantalla final no té cap estat nou: canviar la fase a `finished` ja és el moment de la revelació."
+
+`FinalResults` és un sol component per al mòbil dels convidats i per al panell de l'amfitriona: guanyador (o empat), podi i rànquing sencer, amb la meua posició destacada. Com que tot ve de la base de dades, qui torna a obrir la pestanya després veu el mateix.
+
+### Com ho he provat
+**La frase:** "La regla nova té tests que la trenquen a propòsit: dos actes del mateix convidat, un empat i l'amfitriona amb punts."
+
+5 tests pgTAP nous (112 en total): suma de les tres fonts, només compta el millor acte, empats amb el mateix rank, convidat sense punts amb 0, i l'amfitriona fora. També vaig actualitzar els tests que tenien els 100 punts per estrela escrits a mà.
+

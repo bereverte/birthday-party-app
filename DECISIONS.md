@@ -22,11 +22,13 @@ A log of significant technical decisions and the reasoning behind them.
 - `quiz_leaderboard`: `source_type = 'quiz'`, guests only.
 - `party_leaderboard`: `source_type IN ('challenge', 'show')`, includes the host.
 
+*Superseded in part by 035: `party_leaderboard` was replaced by one global `leaderboard`.*
+
 **Why:** Like a bank statement: every movement is traceable and totals can never drift out of sync. A new ranking is just a new view. A `unique(player_id, source_type, source_id)` constraint makes scoring idempotent: closing a question twice doesn't double points, and re-awarding a challenge overwrites instead of adding.
 
 ## 004 — Host is both an admin and a player
 
-**Decision:** The host has a row in `hosts` (permissions) and in `players` (participation). She plays challenges and the show but not the quiz (the quiz is about her). `submit_answer` rejects hosts, and `quiz_leaderboard` excludes them. Whether she is eligible for a prize is deferred.
+**Decision:** The host has a row in `hosts` (permissions) and in `players` (participation). She plays challenges and the show but not the quiz (the quiz is about her). `submit_answer` rejects hosts, and `quiz_leaderboard` excludes them. Whether she is eligible for a prize is deferred (settled in 035: she isn't).
 
 **Why:** Separating "who can control the game" from "who plays" keeps both concepts simple and lets RLS check `is_host()` independently.
 
@@ -238,3 +240,9 @@ Reads are **coalesced**: only one runs at a time, and events that arrive during 
 **Decision:** The host runs the show one act at a time in three steps: `start_act(id)` (on stage, `performing`), `open_voting()` (`voting`, 1-5 stars) and the existing `close_voting(id)` (`done`, each member gets avg × `show_points_per_star`). `start_act` locks `party_state`, works only in the `show` phase, refuses while another act is being voted, sends an act still performing back to `pending`, and can restart a `done` act to redo it. A partial unique index allows at most one act in `performing`/`voting`. `party_state.current_act_id` keeps pointing at a closed act, so every screen shows its result until the next act starts. Guests can sign up (solo, pair or group, `sign_up_act`) during the whole party from a floating button, hidden while a quiz question is open, and withdraw their act with `withdraw_act` while it's still `pending`. Acts with points can't be deleted (`act_has_points`, same pattern as 024 and 033). `show_votes` joins the Realtime publication for the host's live vote count.
 
 **Why:** Separating "performing" from "voting" stops people from voting before the act ends, and gives every phone a clear "on stage now" screen. Refusing to switch acts during a vote means a misplaced tap can't throw away votes that were never scored. Doing each step in one RPC keeps the act status and `party_state` in step even if the connection drops. Sign-up is open all party so people can prepare their act early; it's hidden while a question is open so it never costs anyone quiz points. Adding `show_votes` to Realtime is safe because Realtime applies RLS: a guest only gets events for their own vote, and the host gets all of them. Guests see the result through the points ledger (points ÷ points per star), so they never read anyone else's vote.
+
+## 035 — One global ranking with one prize, rebalanced points
+
+**Decision:** The two rankings (quiz and party, each with a prize) become one global ranking with one prize. The view `leaderboard` replaces `party_leaderboard`: total = quiz + challenges + the player's **best** show act. Guests only. `quiz_leaderboard` stays for the per-question ranking and a quiz podium that guests now see after the last question. The phase `finished` shows the winner, the podium and the full ranking on every phone and on the host panel. Switching to that phase is the reveal. Points are rebalanced in `scoring_config`: challenge presets go from 100/50/25/10 to 3000/2000/1000/500, and the show from 100 to 300 points per star (max 1500 per act). The quiz stays at 500 + up to 500 speed bonus per question.
+
+**Why:** One prize is easier to explain at a party, and a running total during challenges and the show keeps everyone in the race. With the old numbers the quiz (~25 questions, up to ~25,000 points) would have decided the winner alone. The show is optional, so it weighs less than the challenges: not performing shouldn't leave anyone far behind. Anyone can still perform in several acts, but only the best one counts. That rule lives in the view, not the ledger, so the ledger stays a plain record of what each act scored. The host is out because she doesn't play the quiz (she would start far behind) and it's her party. She still plays challenges and performs.

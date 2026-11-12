@@ -8,7 +8,7 @@ Personal project + portfolio piece. The developer wants to learn Supabase and re
 1. Kahoot-style quiz about the host: points for correct answers + speed bonus, ranking after each question, winner at the end.
 2. Party challenges (e.g. jump rope, egg-and-spoon race): host enters results, guests earn points.
 3. Final show: optional sign-up (solo, pair or group), guests and host vote on each act. No self-voting.
-4. Two rankings, each with its own prize: Quiz (guests only) and Party (challenges + show, host included). No global ranking.
+4. One global ranking with one prize: quiz + challenges + best show act, guests only (DECISIONS 035). Guests see a quiz podium after the last question and the final ranking in the `finished` phase.
 
 ## Stack
 
@@ -20,7 +20,7 @@ React + TypeScript + Tailwind (Vite), Supabase (Postgres + Realtime + Auth), dep
 - Host uses real auth (magic link) so she can control the game from any device.
 - The database is the single source of truth. Realtime only notifies changes; on (re)connect, clients refetch state.
 - Scoring is server-side (SQL functions), using server timestamps. Never trust client clocks.
-- Points go to a single points ledger table; each ranking is a view summing it by source_type. The host plays challenges and the show, not the quiz.
+- Points go to a single points ledger table; rankings are views over it (`leaderboard` global, `quiz_leaderboard` for the quiz). The host plays challenges and the show, not the quiz, and isn't in the global ranking.
 - Guest phones always show the full question, so a projector is optional. Host view (/host) must work on laptop or phone.
 - Minimal host rescue controls: force resync, close question now.
 - Mobile-first, festive design with personality, not template-looking. Soft style: white cards with diffuse shadows, no outlines or tilts, one loud "party" card per screen at most.
@@ -36,7 +36,8 @@ React + TypeScript + Tailwind (Vite), Supabase (Postgres + Realtime + Auth), dep
 - Phase 6 (done, deployed): challenges, created from /host, one active at a time, select players + preset points (DECISIONS 033).
 - Before the party: clean production test data (quiz answers, points, test players, anonymous auth users) and reset `party_state` to lobby. Keep the quiz questions, the `hosts` row and the host's player.
 - Phase 7 (done): final show: sign-up from any phase, host runs one act at a time (start → open voting → close), stars 1–5 (DECISIONS 034).
-- Next: leaderboards.
+- Phase 8 (done): single global ranking, rebalanced points, quiz podium for guests, final screen (DECISIONS 035).
+- Next: party-day prep (clean production data, real run-through).
 - Extra if time allows: avatar builder (e.g. DiceBear) to replace the emoji picker.
 
 ## Reuse before writing new code
