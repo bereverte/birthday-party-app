@@ -8,7 +8,7 @@ import type { Player } from '../../hooks/usePlayers'
 import type { RealtimeStatus } from '../../hooks/useRealtimeRefetch'
 import { friendlyError } from '../../lib/errors'
 import { supabase } from '../../lib/supabase'
-import { Ranking } from '../leaderboard/Ranking'
+import { PositionCard } from '../leaderboard/PositionCard'
 import { useLeaderboard } from '../leaderboard/useLeaderboard'
 import { ActMembers } from './ActMembers'
 import { actKind } from './actKind'
@@ -63,7 +63,7 @@ export function GuestShow({ me, players, party, status, onSignUp }: Props) {
       {ranking.data && ranking.data.length > 0 && (!onStage || onStage.status === 'done') && (
         <section className="flex flex-col gap-3">
           <h2 className="text-2xl font-bold">Rànquing general</h2>
-          <Ranking ranks={ranking.data} meId={me.id} />
+          <PositionCard ranks={ranking.data} meId={me.id} />
         </section>
       )}
     </Screen>

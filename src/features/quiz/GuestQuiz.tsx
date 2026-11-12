@@ -13,6 +13,7 @@ import { CountdownBadge } from './CountdownBadge'
 import { NumberPicker } from './NumberPicker'
 import { optionStyle } from './optionStyles'
 import { Podium } from '../leaderboard/Podium'
+import { PositionCard } from '../leaderboard/PositionCard'
 import { Ranking } from '../leaderboard/Ranking'
 import { multiFraction, textCredit } from './scoring'
 import { useAutoCloseQuestion } from './useAutoCloseQuestion'
@@ -238,18 +239,18 @@ export function GuestQuiz({ me, party, status, refetchParty }: Props) {
       {revealed && ranking.data && data.isLast && (
         <section className="flex flex-col gap-4">
           <div>
-            <h2 className="text-2xl font-bold">🏁 Podi del quiz</h2>
-            <p className="text-ink-soft">Aquests punts compten per al rànquing final 🏆</p>
+            <h2 className="text-2xl font-bold">🏁 Rànquing del quiz</h2>
+            <p className="text-ink-soft">Aquests punts se sumen a les proves i al show per al rànquing general 🏆</p>
           </div>
           <Podium ranks={ranking.data} />
-          <Ranking ranks={ranking.data} meId={me.id} />
+          <Ranking ranks={ranking.data} limit={ranking.data.length} meId={me.id} />
         </section>
       )}
 
       {revealed && ranking.data && !data.isLast && (
         <section className="flex flex-col gap-3">
-          <h2 className="text-2xl font-bold">Rànquing</h2>
-          <Ranking ranks={ranking.data} meId={me.id} />
+          <h2 className="text-2xl font-bold">Rànquing del quiz</h2>
+          <PositionCard ranks={ranking.data} meId={me.id} />
         </section>
       )}
     </Screen>

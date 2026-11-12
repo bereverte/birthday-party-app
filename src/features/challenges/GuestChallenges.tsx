@@ -4,7 +4,7 @@ import { StatusPill } from '../../components/ui/StatusPill'
 import type { PartyState } from '../../hooks/usePartyState'
 import type { Player } from '../../hooks/usePlayers'
 import type { RealtimeStatus } from '../../hooks/useRealtimeRefetch'
-import { Ranking } from '../leaderboard/Ranking'
+import { PositionCard } from '../leaderboard/PositionCard'
 import { useLeaderboard } from '../leaderboard/useLeaderboard'
 import { useChallengePoints } from './useChallengePoints'
 import { useChallenges } from './useChallenges'
@@ -62,7 +62,7 @@ export function GuestChallenges({ me, party, status }: Props) {
       {ranking.data && ranking.data.length > 0 && (
         <section className="flex flex-col gap-3">
           <h2 className="text-2xl font-bold">Rànquing general</h2>
-          <Ranking ranks={ranking.data} meId={me.id} />
+          <PositionCard ranks={ranking.data} meId={me.id} />
         </section>
       )}
     </Screen>
