@@ -7,6 +7,7 @@ import { friendlyError } from '../../lib/errors'
 import { supabase } from '../../lib/supabase'
 import { CountdownBadge } from './CountdownBadge'
 import { optionStyle } from './optionStyles'
+import { QuestionText } from './QuestionText'
 import { mainTextAnswer } from './useCurrentQuestion'
 import { Podium } from '../leaderboard/Podium'
 import { Ranking } from '../leaderboard/Ranking'
@@ -116,7 +117,9 @@ export function HostQuiz({ party, players, refetchParty }: Props) {
                     : `🔢 Tria un número del 0 al ${current.number_max}`}
               </p>
             )}
-            <p className="font-display text-2xl leading-tight font-bold break-words">{current.text}</p>
+            <p className="font-display text-2xl leading-tight font-bold break-words">
+              <QuestionText text={current.text} />
+            </p>
             {current.image_url && (
               <img src={current.image_url} alt="" className="max-h-72 w-full rounded-3xl object-cover shadow-card" />
             )}

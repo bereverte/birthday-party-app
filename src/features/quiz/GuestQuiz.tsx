@@ -12,6 +12,7 @@ import { supabase } from '../../lib/supabase'
 import { CountdownBadge } from './CountdownBadge'
 import { NumberPicker } from './NumberPicker'
 import { optionStyle } from './optionStyles'
+import { QuestionText } from './QuestionText'
 import { Podium } from '../leaderboard/Podium'
 import { PositionCard } from '../leaderboard/PositionCard'
 import { Ranking } from '../leaderboard/Ranking'
@@ -174,7 +175,9 @@ export function GuestQuiz({ me, party, status, refetchParty }: Props) {
       <div className="flex items-start gap-3">
         <div className="min-w-0 flex-1">
           <p className="text-sm font-bold text-ink-soft">Pregunta {data.question.position}</p>
-          <h1 className="text-2xl leading-tight font-bold break-words">{data.question.text}</h1>
+          <h1 className="text-2xl leading-tight font-bold break-words">
+            <QuestionText text={data.question.text} />
+          </h1>
         </div>
         {open && <CountdownBadge seconds={seconds} />}
       </div>
