@@ -15,6 +15,7 @@ type Props = {
 
 // Create or edit a challenge. The database checks the lengths too.
 export function ChallengeForm({ challenge, nextPosition, onDone }: Props) {
+  const [emoji, setEmoji] = useState(challenge?.emoji ?? '🏆')
   const [name, setName] = useState(challenge?.name ?? '')
   const [description, setDescription] = useState(challenge?.description ?? '')
   const [saving, setSaving] = useState(false)
@@ -24,8 +25,8 @@ export function ChallengeForm({ challenge, nextPosition, onDone }: Props) {
     event.preventDefault()
     setSaving(true)
     setError(null)
-    // No emoji field: the column keeps its database default and the UI no longer shows it.
     const values = {
+      emoji: emoji.trim() || '🏆',
       name: name.trim(),
       description: description.trim() || null,
     }
@@ -41,15 +42,17 @@ export function ChallengeForm({ challenge, nextPosition, onDone }: Props) {
     <Card tone="sun">
       <form onSubmit={(e) => void save(e)} className="flex flex-col gap-4">
         <h3 className="text-xl font-bold">{challenge ? 'Editar prova' : 'Nova prova'}</h3>
-        <TextInput
-          label="Nom"
-          value={name}
-          maxLength={40}
-          required
-          placeholder="🪢 Saltar a corda"
-          hint="Si vols un emoji, posa’l al nom."
-          onChange={(e) => setName(e.target.value)}
-        />
+        <div className="grid grid-cols-[5rem_1fr] gap-3">
+          <TextInput label="Emoji" value={emoji} maxLength={16} onChange={(e) => setEmoji(e.target.value)} />
+          <TextInput
+            label="Nom"
+            value={name}
+            maxLength={40}
+            required
+            placeholder="Saltar a corda"
+            onChange={(e) => setName(e.target.value)}
+          />
+        </div>
         <TextInput
           label="Descripció (opcional)"
           value={description}

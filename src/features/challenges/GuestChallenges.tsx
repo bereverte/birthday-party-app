@@ -35,12 +35,11 @@ export function GuestChallenges({ me, party, status }: Props) {
 
       {current ? (
         <Card tone="party" className="flex flex-col items-center gap-3 py-6 text-center">
-          {/* The host writes any emoji into the name, so the card uses a fixed one. */}
           <span className="animate-float text-6xl" aria-hidden>
-            🏃
+            {current.emoji}
           </span>
-          <h1 className="text-3xl font-bold break-words">{current.name}</h1>
-          {current.description && <p className="text-lg break-words">{current.description}</p>}
+          <h1 className="text-3xl font-bold">{current.name}</h1>
+          {current.description && <p className="text-lg">{current.description}</p>}
         </Card>
       ) : (
         <Card tone="party" className="flex flex-col items-center gap-3 py-6 text-center">
