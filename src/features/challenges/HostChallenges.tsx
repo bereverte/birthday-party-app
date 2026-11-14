@@ -108,7 +108,7 @@ export function HostChallenges({ party, players, refetchParty }: Props) {
     })
 
   const remove = (challenge: Challenge) => {
-    if (!window.confirm(`Esborrar ${challenge.emoji} ${challenge.name}?`)) return
+    if (!window.confirm(`Esborrar ${challenge.name}?`)) return
     return run(`delete:${challenge.id}`, async () => {
       // RLS turns a refused delete into "0 rows", not an error.
       const { data, error } = await supabase.from('challenges').delete().eq('id', challenge.id).select('id')
@@ -142,14 +142,9 @@ export function HostChallenges({ party, players, refetchParty }: Props) {
       {current ? (
         <Card tone="party" className="flex flex-col gap-3">
           <p className="text-sm font-bold opacity-85">Prova en marxa</p>
-          <div className="flex items-center gap-4">
-            <span className="text-5xl" aria-hidden>
-              {current.emoji}
-            </span>
-            <div className="min-w-0">
-              <h2 className="text-2xl leading-tight font-bold break-words">{current.name}</h2>
-              {current.description && <p className="mt-1 break-words">{current.description}</p>}
-            </div>
+          <div className="min-w-0">
+            <h2 className="text-2xl leading-tight font-bold break-words">{current.name}</h2>
+            {current.description && <p className="mt-1 break-words">{current.description}</p>}
           </div>
           <div className="flex flex-wrap gap-3">
             <Button variant="primary" loading={busy === 'finish'} onClick={() => void finish()}>
@@ -157,7 +152,7 @@ export function HostChallenges({ party, players, refetchParty }: Props) {
             </Button>
             {next && (
               <Button variant="ghost" loading={busy === `start:${next.id}`} onClick={() => void start(next.id)}>
-                ▶️ Següent: {next.emoji} {next.name}
+                ▶️ Següent: {next.name}
               </Button>
             )}
           </div>
@@ -167,7 +162,7 @@ export function HostChallenges({ party, players, refetchParty }: Props) {
           <h2 className="text-2xl font-bold">🏃 Proves</h2>
           {next ? (
             <Button variant="primary" size="lg" loading={busy === `start:${next.id}`} onClick={() => void start(next.id)}>
-              ▶️ Començar {next.emoji} {next.name}
+              ▶️ Començar {next.name}
             </Button>
           ) : (
             <p>{list.length === 0 ? 'Encara no hi ha proves. Crea’n una aquí baix.' : 'Totes les proves estan fetes 🎉'}</p>
@@ -294,9 +289,6 @@ export function HostChallenges({ party, players, refetchParty }: Props) {
             <ol className="flex flex-col divide-y divide-line">
               {list.map((c) => (
                 <li key={c.id} className="flex items-center gap-2 py-2">
-                  <span className="text-xl" aria-hidden>
-                    {c.emoji}
-                  </span>
                   <span className={`min-w-0 flex-1 truncate ${c.id === currentId ? 'font-bold' : ''}`}>{c.name}</span>
                   <span
                     className={`rounded-full px-2 py-0.5 text-xs font-bold ${c.status === 'active' ? 'bg-pink-soft' : c.status === 'done' ? 'bg-mint-soft' : 'bg-bg-via'}`}
