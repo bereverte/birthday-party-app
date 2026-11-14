@@ -147,8 +147,8 @@ export function HostChallenges({ party, players, refetchParty }: Props) {
               {current.emoji}
             </span>
             <div className="min-w-0">
-              <h2 className="text-2xl leading-tight font-bold">{current.name}</h2>
-              {current.description && <p className="mt-1">{current.description}</p>}
+              <h2 className="text-2xl leading-tight font-bold break-words">{current.name}</h2>
+              {current.description && <p className="mt-1 break-words">{current.description}</p>}
             </div>
           </div>
           <div className="flex flex-wrap gap-3">

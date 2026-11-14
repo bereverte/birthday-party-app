@@ -8,14 +8,16 @@ type Props = InputHTMLAttributes<HTMLInputElement> & {
 export function TextInput({ label, hint, className = '', ...rest }: Props) {
   const id = useId()
   return (
-    <div className="flex flex-col gap-1.5">
-      <label htmlFor={id} className="font-display font-bold">
+    // min-w-0 + w-full: an input's default width (~20 characters) must not push it out of a narrow
+    // grid column or a phone screen.
+    <div className="flex min-w-0 flex-col gap-1.5">
+      <label htmlFor={id} className="truncate font-display font-bold">
         {label}
       </label>
       <input
         {...rest}
         id={id}
-        className={`rounded-2xl border border-line bg-paper px-4 py-3 text-lg transition-[border-color,box-shadow] outline-none placeholder:text-ink-soft/60 focus:border-pink focus:ring-4 focus:ring-pink/15 ${className}`}
+        className={`w-full min-w-0 rounded-2xl border border-line bg-paper px-4 py-3 text-lg transition-[border-color,box-shadow] outline-none placeholder:text-ink-soft/60 focus:border-pink focus:ring-4 focus:ring-pink/15 ${className}`}
       />
       {hint && <p className="text-sm text-ink-soft">{hint}</p>}
     </div>
